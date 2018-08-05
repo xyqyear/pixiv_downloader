@@ -1,3 +1,4 @@
 token.txt
 real_test.py
 ./__pycache__
+*.pyc
