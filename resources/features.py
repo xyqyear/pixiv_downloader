@@ -5,7 +5,7 @@ import sys
 import re
 import os
 
-from .utils import print_exception, print_end, getfile
+from .utils import print_exception, print_end, getfile, handle_file_name
 from .parsers import parse_image_url
 
 def download_bookmarks(api_object, user_uid):
@@ -18,13 +18,14 @@ def download_bookmarks(api_object, user_uid):
     while True:
         try:
             user_info = api_object.user_detail(user_uid)
-            user_total_bookmarks = user_info['profile']['total_illust_bookmarks_public']
-            user_name = user_info
         except:
             print_exception()
             continue
         break
 
+    user_total_bookmarks = user_info['profile']['total_illust_bookmarks_public']
+    user_name            = user_info['user']['name']
+    prefix = '_'.join([handle_file_name(user_name), user_uid, '收藏夹'])
     print('正在拉取收藏夹列表...')
     max_bookmark_id = str()
     image_urls = list()
@@ -48,7 +49,7 @@ def download_bookmarks(api_object, user_uid):
             print('100%')
             break
 
-    download_images(image_urls, user_uid)
+    download_images(image_urls, prefix)
 
 def download_works(api_object, user_uid):
     """
@@ -59,12 +60,15 @@ def download_works(api_object, user_uid):
     """
     while True:
         try:
-            user_total_illusts = api_object.user_detail(user_uid)['profile']['total_illusts']
+            user_info = api_object.user_detail(user_uid)
         except:
             print_exception()
             continue
         break
-
+    user_total_illusts = user_info['profile']['total_illusts']
+    user_name = user_info['user']['name']
+    # 创建的文件夹名
+    prefix = '_'.join([handle_file_name(user_name), user_uid, '作品'])
     print('正在拉取画师作品列表...')
     offset = 0
     image_urls = list()
@@ -86,7 +90,7 @@ def download_works(api_object, user_uid):
             print('100%')
             break
 
-    download_images(image_urls, user_uid)
+    download_images(image_urls, prefix)
 
 
 
@@ -94,6 +98,7 @@ def download_works(api_object, user_uid):
 def download_images(urls_list, prefix):
     """
     下载图片列表
+    还得检测画师名是不是变了，变了就要改文件夹名字
     :param urls_list: 图片列表，元素都是url组成的list
     :param prefix: 下载的文件夹名
     :return:
@@ -138,6 +143,19 @@ def download_images(urls_list, prefix):
                     print(f'{percentage}%:图片{image_file_name}下载完成')
                 else:
                     print(f'{percentage}%:图片{image_file_name}下载失败多次，取消下载。')
+
+def check_prefix(prefix):
+    """
+    检查画师是否改名了
+    如果prefix的后面两个东西存在于子目录名中
+    就把那个子目录名字改成新的名字
+    :param prefix: 新的文件名
+    :return: 
+    """
+    id_and_mode = prefix.split('_', 1)
+    for dir_ in os.listdir('.'):
+        if id_and_mode in dir_:
+            os.rename(dir_, prefix)
 
 def check_images(urls_list, prefix):
     """

@@ -31,3 +31,15 @@ def print_exception():
     """
     e = sys.exc_info()
     print(f"Error '{e[1]}' happened on line {e[2].tb_lineno}")
+
+def handle_file_name(string):
+    """
+    用于处理windows路径敏感的字符串
+    :param string: 需要处理的字符串
+    :return:
+    """
+    return string\
+        .replace('\\', '_').replace('/', '_') \
+        .replace('"', '_').replace('<', '_') \
+        .replace('>', '_').replace('|', '_') \
+        .replace(':', '_').replace('?', '_').replace('*', '_')
