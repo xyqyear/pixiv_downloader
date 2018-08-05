@@ -2,9 +2,8 @@
 import getpass
 import os
 
-from .utils import load_token, save_token, getfile
-from .features import download_works, download_bookmarks, auth
-
+from .utils import load_token, save_token, getfile, auth
+from .features import download_works, download_bookmarks
 
 def login(api_object):
     """

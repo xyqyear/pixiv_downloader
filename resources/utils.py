@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
+import requests
 import base64
 import json
+import time
 import sys
 import os
 
@@ -87,3 +89,104 @@ def parse_image_url(response_json):
 
         out_list.append(urls)
     return out_list
+
+def check_images(urls_list, prefix):
+    """
+    从列表中去除下载过的图片
+    :param urls_list: 
+    :param prefix: 
+    :return:
+    """
+    downloaded_file_name = [os.path.split(i)[1] for i in getfile(prefix)]
+    to_remove_image = list()
+    for image in urls_list:
+        to_remove_url = list()
+        for url in image:
+            image_file_name = os.path.basename(url)
+            if image_file_name in downloaded_file_name:
+                to_remove_url.append(url)
+
+        for url in to_remove_url:
+            image.remove(url)
+
+        if not image:
+            to_remove_image.append(image)
+
+    for image in to_remove_image:
+        urls_list.remove(image)
+
+def real_download(url, path, retry_count = 4):
+    """
+    下载图片
+    :param url: 
+    :param path: 
+    :param retry_count: 重试次数
+    :return: 完不完成
+    """
+    for i in range(retry_count):
+        try:
+            response = requests.get(url, headers={'Referer': 'https://app-api.pixiv.net/'})
+            with open(path, 'wb') as f:
+                f.write(response.content)
+            return True
+        except:
+            time.sleep(1)
+
+    return False
+
+def auth(api_object, username = str(), password = str(),
+                     access_token = str(), refresh_token = str()):
+    """
+    登录验证
+    第一次登录就只传入用户密码
+    完了之后api会返回access_token和refresh_token
+    api之后的使用和服务器验证的主要就是access_token
+    所以验证完用户名密码下次就只传入access_token和refresh_token就行了
+    access_token一段时间后会过期，这样就只传入refresh_token来刷新access_token
+    :param api_object: api对象
+    :param username: 
+    :param password: 
+    :param access_token: 
+    :param refresh_token: 
+    :return: token字典
+    """
+
+    # 总之先定义返回值
+    tokens = {'access_token':access_token,
+              'refresh_token':refresh_token}
+
+    # 如果传入了用户名密码就进行初次登录验证
+    # 如果登录出错就认为是用户名密码错误
+    if username and password:
+        try:
+            new_tokens = api_object.login(username, password)
+            tokens = parse_token_response(new_tokens)
+        except:
+            tokens = None
+
+    # 如果传入了access_token和refresh_token就用这个验证
+    elif access_token and refresh_token:
+        try:
+            api_object.set_auth(access_token, refresh_token)
+            if 'error' in api_object.illust_follow():
+                raise Exception
+        except:
+            print_exception()
+            print('验证已过期,正在刷新')
+            tokens = auth(api_object, refresh_token=refresh_token)
+
+    # 如果只传入了refresh_token就用这个验证
+    elif refresh_token:
+        try:
+            new_tokens = api_object.auth(refresh_token=refresh_token)
+            tokens = parse_token_response(new_tokens)
+
+        except:
+            print_exception()
+            print('用于刷新的token也过期了')
+            tokens = None
+
+    else:
+        tokens = None
+
+    return tokens
