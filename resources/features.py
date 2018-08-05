@@ -1,9 +1,12 @@
 # -*- coding:utf-8 -*-
+import requests
+import time
 import sys
 import re
 import os
 
-from .utils import print_exception, parse_image_url, print_end, check_images, real_download
+from .utils import print_exception, print_end, getfile
+from .parsers import parse_image_url
 
 def download_bookmarks(api_object, user_uid):
     """
@@ -14,7 +17,9 @@ def download_bookmarks(api_object, user_uid):
     """
     while True:
         try:
-            user_total_bookmarks = api_object.user_detail(user_uid)['profile']['total_illust_bookmarks_public']
+            user_info = api_object.user_detail(user_uid)
+            user_total_bookmarks = user_info['profile']['total_illust_bookmarks_public']
+            user_name = user_info
         except:
             print_exception()
             continue
@@ -83,6 +88,9 @@ def download_works(api_object, user_uid):
 
     download_images(image_urls, user_uid)
 
+
+
+# 以下三个函数是相关联的，就不放在不同的模块里面了
 def download_images(urls_list, prefix):
     """
     下载图片列表
@@ -130,3 +138,47 @@ def download_images(urls_list, prefix):
                     print(f'{percentage}%:图片{image_file_name}下载完成')
                 else:
                     print(f'{percentage}%:图片{image_file_name}下载失败多次，取消下载。')
+
+def check_images(urls_list, prefix):
+    """
+    从列表中去除下载过的图片
+    :param urls_list: 
+    :param prefix: 
+    :return:
+    """
+    downloaded_file_name = [os.path.split(i)[1] for i in getfile(prefix)]
+    to_remove_image = list()
+    for image in urls_list:
+        to_remove_url = list()
+        for url in image:
+            image_file_name = os.path.basename(url)
+            if image_file_name in downloaded_file_name:
+                to_remove_url.append(url)
+
+        for url in to_remove_url:
+            image.remove(url)
+
+        if not image:
+            to_remove_image.append(image)
+
+    for image in to_remove_image:
+        urls_list.remove(image)
+
+def real_download(url, path, retry_count = 4):
+    """
+    下载图片
+    :param url: 
+    :param path: 
+    :param retry_count: 重试次数
+    :return: 完不完成
+    """
+    for i in range(retry_count):
+        try:
+            response = requests.get(url, headers={'Referer': 'https://app-api.pixiv.net/'})
+            with open(path, 'wb') as f:
+                f.write(response.content)
+            return True
+        except:
+            time.sleep(1)
+
+    return False
