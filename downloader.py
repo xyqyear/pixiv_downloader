@@ -9,6 +9,7 @@ import sys
 import os
 import re
 
+# 某些print的时候用到的end
 print_end = '\r'
 
 def getfile(dir_,ext = None):
@@ -31,21 +32,39 @@ def getfile(dir_,ext = None):
     return allfiles
 
 def print_exception():
+    """
+    打印错误
+    :return: 
+    """
     e = sys.exc_info()
     print(f"Error '{e[1]}' happened on line {e[2].tb_lineno}")
 
 def save_token(tokens_dict):
+    """
+    保存token到文件
+    :param tokens_dict: 
+    :return: 
+    """
     with open('token.txt', 'wb') as f:
         token_json = json.dumps(tokens_dict)
         f.write(base64.b85encode(token_json.encode('utf-8')))
 
 def load_token():
+    """
+    从文件中读取token
+    :return: 
+    """
     with open('token.txt', 'rb') as f:
         token_json = base64.b85decode(f.read()).decode('utf-8')
         tokens_dict = json.loads(token_json)
     return tokens_dict
 
 def parse_token_response(token_json):
+    """
+    从auth方法返回值中解析出token
+    :param token_json: 
+    :return: 
+    """
     return {'access_token':token_json['response']['access_token'],
             'refresh_token':token_json['response']['refresh_token']}
 
@@ -53,6 +72,11 @@ def auth(api_object, username = str(), password = str(),
                      access_token = str(), refresh_token = str()):
     """
     登录验证
+    第一次登录就只传入用户密码
+    完了之后api会返回access_token和refresh_token
+    api之后的使用和服务器验证的主要就是access_token
+    所以验证完用户名密码下次就只传入access_token和refresh_token就行了
+    access_token一段时间后会过期，这样就只传入refresh_token来刷新access_token
     :param api_object: api对象
     :param username: 
     :param password: 
@@ -103,7 +127,7 @@ def auth(api_object, username = str(), password = str(),
 
 def login(api_object):
     """
-    用于登录api,使用简单的base64加密储存token
+    用于登录api,使用简单的base85加密储存token
     :param api_object: api对象
     :return: 无
     """
