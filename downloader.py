@@ -358,11 +358,11 @@ def parse_image_url(response_json):
         out_list.append(urls)
     return out_list
 
-if __name__ == '__main__':
-    aapi = AppPixivAPI()
-    login(aapi)
-    # 确定工作模式
-    mode = str()
+def work(api_object):
+    """
+    确定工作模式并工作
+    :return: 
+    """
     while True:
         mode = input('请输入工作模式(1是下载画师作品,2是下载收藏夹):')
         if mode in ['1', '2', '3']:
@@ -376,7 +376,7 @@ if __name__ == '__main__':
                 break
             print('请输入正确的画师uid!')
 
-        download_works(aapi, uid)
+        download_works(api_object, uid)
 
     if mode == '2':
         while True:
@@ -385,8 +385,13 @@ if __name__ == '__main__':
                 break
             print('请输入正确的用户uid!')
 
-        download_bookmarks(aapi, uid)
+        download_bookmarks(api_object, uid)
 
     # Test Mode
     if mode == '3':
         print(getfile('13665349'))
+
+if __name__ == '__main__':
+    aapi = AppPixivAPI()
+    login(aapi)
+    work(aapi)
