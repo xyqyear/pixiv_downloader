@@ -1,10 +1,12 @@
 # -*- coding:utf-8 -*-
 
 from pixivpy3 import AppPixivAPI
-from resources.login import login
-from resources.mode import work
+from resources.login import user_manager
+from resources.mode import mode_switch
 
 if __name__ == '__main__':
+    token_holder = user_manager()
+    
     aapi = AppPixivAPI()
-    login(aapi)
-    work(aapi)
+    token_holder.login(aapi)
+    mode_switch.start(aapi)
