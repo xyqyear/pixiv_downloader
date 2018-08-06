@@ -10,3 +10,4 @@ bookmark_info.txt
 build/
 dist/
 *.bat
+resources/download_ranking.py
