@@ -1,9 +1,13 @@
 # -*- coding:utf-8 -*-
 
-from .utils import exception_handler
+import base64
+import json
 
-class token_holder():
+from .utils import ExceptionHandler
 
+class TokenHolder:
+
+    @staticmethod
     def parse_token_response(token_json):
         """
         从auth方法返回值中解析出token
@@ -13,6 +17,7 @@ class token_holder():
         return {'access_token':token_json['response']['access_token'],
                 'refresh_token':token_json['response']['refresh_token']}
 
+    @staticmethod
     def save(tokens_dict):
         """
         保存token到文件
@@ -23,6 +28,7 @@ class token_holder():
             token_json = json.dumps(tokens_dict)
             f.write(base64.b85encode(token_json.encode('utf-8')))
 
+    @staticmethod
     def load(token_file):
         """
         从文件中读取token
@@ -33,7 +39,7 @@ class token_holder():
             tokens_dict = json.loads(token_json)
         return tokens_dict
 
-    def auth(api_object, username = str(), password = str(),
+    def auth(self, api_object, username = str(), password = str(),
                          access_token = str(), refresh_token = str()):
         """
         登录验证
@@ -58,7 +64,7 @@ class token_holder():
         if username and password:
             try:
                 new_tokens = api_object.login(username, password)
-                tokens = parse_token_response(new_tokens)
+                tokens = self.parse_token_response(new_tokens)
             except:
                 tokens = None
 
@@ -69,18 +75,18 @@ class token_holder():
                 if 'error' in api_object.illust_follow():
                     raise Exception
             except:
-                exception_handler.raise_exception()
+                ExceptionHandler.raise_exception()
                 print('验证已过期,正在刷新')
-                tokens = auth(api_object, refresh_token=refresh_token)
+                tokens = self.auth(api_object, refresh_token=refresh_token)
 
         # 如果只传入了refresh_token就用这个验证
         elif refresh_token:
             try:
                 new_tokens = api_object.auth(refresh_token=refresh_token)
-                tokens = parse_token_response(new_tokens)
+                tokens = self.parse_token_response(new_tokens)
 
             except:
-                exception_handler.raise_exception()
+                ExceptionHandler.raise_exception()
                 print('用于刷新的token也过期了')
                 tokens = None
 
@@ -90,8 +96,9 @@ class token_holder():
 
         return tokens
 
-class url_manager():
-    
+class UrlManager:
+
+    @staticmethod
     def parse_image_urls(response_json):
         """
         解析返回的画师数据和收藏夹数据

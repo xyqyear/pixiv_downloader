@@ -5,8 +5,7 @@ __pycache__/
 *.spec
 user_info.txt
 bookmark_info.txt
-*作品/
-*收藏夹/
+*[0-9]*/
 build/
 dist/
 *.bat

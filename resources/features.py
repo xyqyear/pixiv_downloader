@@ -5,8 +5,8 @@ import sys
 import re
 import os
 
-from .utils import exception_handler, file_handler, print_end
-from .managers import url_manager
+from .utils import ExceptionHandler, FileHandler, ProcessAnimationMaker, print_end
+from .managers import UrlManager
 
 def download_bookmarks(api_object, user_uid):
     """
@@ -19,13 +19,15 @@ def download_bookmarks(api_object, user_uid):
         try:
             user_info = api_object.user_detail(user_uid)
         except:
-            exception_handler.raise_exception()
+            ExceptionHandler.raise_exception()
             continue
         break
 
     user_total_bookmarks = user_info['profile']['total_illust_bookmarks_public']
     user_name            = user_info['user']['name']
-    prefix = '_'.join([file_handler.filenames(user_name), '收藏夹', user_uid])
+    # 创建的文件夹名
+    prefix = '_'.join([FileHandler.handle_filename(user_name), '收藏夹', user_uid])
+    check_prefix(prefix)
     print('正在拉取收藏夹列表...')
     max_bookmark_id = str()
     image_urls = list()
@@ -34,10 +36,10 @@ def download_bookmarks(api_object, user_uid):
         try:
             response = api_object.user_bookmarks_illust(user_uid, max_bookmark_id=max_bookmark_id)
         except:
-            exception_handler.raise_exception()
+            ExceptionHandler.raise_exception()
             print('此页网络错误，正在重试')
             continue
-        image_urls += url_manager.parse_image_urls(response)
+        image_urls += UrlManager.parse_image_urls(response)
         # 如果还有下一页
         if response['next_url']:
             max_bookmark_id = api_object.parse_qs(response['next_url'])['max_bookmark_id']
@@ -62,13 +64,14 @@ def download_works(api_object, user_uid):
         try:
             user_info = api_object.user_detail(user_uid)
         except:
-            exception_handler.raise_exception()
+            ExceptionHandler.raise_exception()
             continue
         break
     user_total_illusts = user_info['profile']['total_illusts']
     user_name = user_info['user']['name']
     # 创建的文件夹名
-    prefix = '_'.join([file_handler.filenames(user_name), '作品', user_uid])
+    prefix = '_'.join([FileHandler.handle_filename(user_name), '作品', user_uid])
+    check_prefix(prefix)
     print('正在拉取画师作品列表...')
     offset = 0
     image_urls = list()
@@ -78,7 +81,7 @@ def download_works(api_object, user_uid):
         except:
             print('此页网络错误，正在重试')
             continue
-        image_urls += url_manager.parse_image_urls(response)
+        image_urls += UrlManager.parse_image_urls(response)
         # 如果还有下一页
         if response['next_url']:
             offset = api_object.parse_qs(response['next_url'])['offset']
@@ -92,14 +95,38 @@ def download_works(api_object, user_uid):
 
     download_images(image_urls, prefix)
 
-def download_ranking(api_object, mode='day', date=None):
+def download_ranking(api_object, date, mode):
     """
     下载排行榜
     :param api_object: 
+    :param mode: 
     :param date: 
     :return: 
     """
-    pass
+    # 创建的文件夹名
+    prefix = '_'.join([date, mode])
+    print('正在拉取排行榜...')
+    offset = 0
+    image_urls = list()
+    animation_maker = ProcessAnimationMaker()
+
+    while True:
+        try:
+            response = api_object.illust_ranking(date=date, mode=mode, offset=offset)
+        except:
+            ExceptionHandler.raise_exception()
+            print('此页网络错误，正在重试')
+            continue
+        image_urls += UrlManager.parse_image_urls(response)
+        # 如果还有下一页
+        if response['next_url']:
+            offset = api_object.parse_qs(response['next_url'])['offset']
+            animation_maker.next_action()
+
+        else:
+            break
+
+    download_images(image_urls, prefix)
 
 # 以下几个函数是相关联的，就不放在不同的模块里面了
 def download_images(urls_list, prefix):
@@ -161,7 +188,7 @@ def check_prefix(prefix):
     :param prefix: 新的文件名
     :return: 
     """
-    id_and_mode = prefix.split('_', 1)
+    id_and_mode = prefix.split('_', 1)[-1]
     for dir_ in os.listdir('.'):
         if id_and_mode in dir_:
             os.rename(dir_, prefix)
@@ -173,7 +200,7 @@ def check_images(urls_list, prefix):
     :param prefix: 
     :return:
     """
-    downloaded_file_name = [os.path.split(i)[1] for i in file_handler.getfile(prefix)]
+    downloaded_file_name = [os.path.split(i)[1] for i in FileHandler.getfile(prefix)]
     to_remove_image = list()
     for image in urls_list:
         to_remove_url = list()

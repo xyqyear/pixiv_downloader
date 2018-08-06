@@ -1,24 +1,23 @@
-# coding = utf-8
+# -*- coding:utf-8 -*-
 
 import getpass
-import base64
-import json
 import os
 
-from .managers import token_holder
-from .utils import exception_handler
+from .managers import TokenHolder
 
-token_file = "token.txt" # 默认存储token 位置
+# 默认存储token 位置
+token_file = "token.txt"
 
-class user_manager():
+class UserManager:
 
     def login(self, api_object):
+        token_holder = TokenHolder()
         if os.path.exists(token_file):
             print("您登陆过，正在验证...")
             tokens = token_holder.load(token_file)
             tokens = token_holder.auth(api_object,
-                          access_token=tokens['access_token'],
-                          refresh_token=tokens['refresh_token'])
+                                      access_token=tokens['access_token'],
+                                      refresh_token=tokens['refresh_token'])
             if tokens:
                 print('登陆成功！')
                 token_holder.save(tokens)
@@ -33,8 +32,8 @@ class user_manager():
             username = input('请输入用户名(或邮箱地址): ')
             password = getpass.getpass('请输入密码: ')
             tokens = token_holder.auth(api_object,
-                          username=username,
-                          password=password)
+                                      username=username,
+                                      password=password)
             if tokens:
                 print('登陆成功!')
                 token_holder.save(tokens)
@@ -42,7 +41,3 @@ class user_manager():
             else:
                 print('登陆失败或网络状况不好，请重新登录!')
                 self.login(api_object)
-
-
-    
-
