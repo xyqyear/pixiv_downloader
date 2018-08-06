@@ -1,6 +1,12 @@
 token.txt
 real_test.py
-./__pycache__
+__pycache__/
 *.pyc
+*.spec
 user_info.txt
 bookmark_info.txt
+*作品/
+*收藏夹/
+build/
+dist/
+*.bat

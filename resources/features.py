@@ -25,7 +25,7 @@ def download_bookmarks(api_object, user_uid):
 
     user_total_bookmarks = user_info['profile']['total_illust_bookmarks_public']
     user_name            = user_info['user']['name']
-    prefix = '_'.join([handle_file_name(user_name), user_uid, '收藏夹'])
+    prefix = '_'.join([handle_file_name(user_name), '收藏夹', user_uid])
     print('正在拉取收藏夹列表...')
     max_bookmark_id = str()
     image_urls = list()
@@ -68,7 +68,7 @@ def download_works(api_object, user_uid):
     user_total_illusts = user_info['profile']['total_illusts']
     user_name = user_info['user']['name']
     # 创建的文件夹名
-    prefix = '_'.join([handle_file_name(user_name), user_uid, '作品'])
+    prefix = '_'.join([handle_file_name(user_name), '作品', user_uid])
     print('正在拉取画师作品列表...')
     offset = 0
     image_urls = list()
@@ -92,9 +92,16 @@ def download_works(api_object, user_uid):
 
     download_images(image_urls, prefix)
 
+def download_ranking(api_object, mode='day', date=None):
+    """
+    下载排行榜
+    :param api_object: 
+    :param date: 
+    :return: 
+    """
+    pass
 
-
-# 以下三个函数是相关联的，就不放在不同的模块里面了
+# 以下几个函数是相关联的，就不放在不同的模块里面了
 def download_images(urls_list, prefix):
     """
     下载图片列表
@@ -143,6 +150,8 @@ def download_images(urls_list, prefix):
                     print(f'{percentage}%:图片{image_file_name}下载完成')
                 else:
                     print(f'{percentage}%:图片{image_file_name}下载失败多次，取消下载。')
+
+    print('100&:所有图片下载完成')
 
 def check_prefix(prefix):
     """
