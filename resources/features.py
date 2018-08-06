@@ -5,8 +5,8 @@ import sys
 import re
 import os
 
-from .utils import print_exception, print_end, getfile, handle_file_name
-from .parsers import parse_image_url
+from .utils import exception_handler, file_handler, print_end
+from .managers import url_manager
 
 def download_bookmarks(api_object, user_uid):
     """
@@ -19,13 +19,13 @@ def download_bookmarks(api_object, user_uid):
         try:
             user_info = api_object.user_detail(user_uid)
         except:
-            print_exception()
+            exception_handler.raise_exception()
             continue
         break
 
     user_total_bookmarks = user_info['profile']['total_illust_bookmarks_public']
     user_name            = user_info['user']['name']
-    prefix = '_'.join([handle_file_name(user_name), '收藏夹', user_uid])
+    prefix = '_'.join([file_handler.filenames(user_name), '收藏夹', user_uid])
     print('正在拉取收藏夹列表...')
     max_bookmark_id = str()
     image_urls = list()
@@ -34,10 +34,10 @@ def download_bookmarks(api_object, user_uid):
         try:
             response = api_object.user_bookmarks_illust(user_uid, max_bookmark_id=max_bookmark_id)
         except:
-            print_exception()
+            exception_handler.raise_exception()
             print('此页网络错误，正在重试')
             continue
-        image_urls += parse_image_url(response)
+        image_urls += url_manager.parse_image_urls(response)
         # 如果还有下一页
         if response['next_url']:
             max_bookmark_id = api_object.parse_qs(response['next_url'])['max_bookmark_id']
@@ -62,13 +62,13 @@ def download_works(api_object, user_uid):
         try:
             user_info = api_object.user_detail(user_uid)
         except:
-            print_exception()
+            exception_handler.raise_exception()
             continue
         break
     user_total_illusts = user_info['profile']['total_illusts']
     user_name = user_info['user']['name']
     # 创建的文件夹名
-    prefix = '_'.join([handle_file_name(user_name), '作品', user_uid])
+    prefix = '_'.join([file_handler.filenames(user_name), '作品', user_uid])
     print('正在拉取画师作品列表...')
     offset = 0
     image_urls = list()
@@ -78,7 +78,7 @@ def download_works(api_object, user_uid):
         except:
             print('此页网络错误，正在重试')
             continue
-        image_urls += parse_image_url(response)
+        image_urls += url_manager.parse_image_urls(response)
         # 如果还有下一页
         if response['next_url']:
             offset = api_object.parse_qs(response['next_url'])['offset']
@@ -173,7 +173,7 @@ def check_images(urls_list, prefix):
     :param prefix: 
     :return:
     """
-    downloaded_file_name = [os.path.split(i)[1] for i in getfile(prefix)]
+    downloaded_file_name = [os.path.split(i)[1] for i in file_handler.getfile(prefix)]
     to_remove_image = list()
     for image in urls_list:
         to_remove_url = list()
