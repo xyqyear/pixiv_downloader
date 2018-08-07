@@ -190,7 +190,7 @@ class Download:
                     else:
                         print(f'{percentage}%:图片{image_file_name}下载失败多次，取消下载。')
 
-        print('100&:所有图片下载完成')
+        print('100%:所有图片下载完成')
 
     @staticmethod
     def check_prefix(prefix):
