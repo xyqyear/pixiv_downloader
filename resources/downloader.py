@@ -55,7 +55,7 @@ class Download:
                 sys.stdout.flush()
 
             else:
-                print('100%')
+                print(f'拉取完成，即将下载{len(image_urls)}张图片')
                 break
 
         self.images(image_urls, prefix)
@@ -102,7 +102,7 @@ class Download:
                 sys.stdout.flush()
 
             else:
-                print('100%')
+                print(f'拉取完成，即将下载{len(image_urls)}张图片')
                 break
 
         self.images(image_urls, prefix)
@@ -136,6 +136,7 @@ class Download:
                 animation_maker.next_action()
 
             else:
+                print(f'拉取完成，即将下载{len(image_urls)}张图片')
                 break
 
         self.images(image_urls, prefix)
@@ -165,12 +166,12 @@ class Download:
                 image_file_name = os.path.basename(url)
                 image_full_path = os.path.join(prefix, image_file_name)
 
-                print(f'{percentage}%:正在下载图片{image_id}', end=print_end)
+                print(f'第{i+1}张图片{image_id}正在下载(总{percentage}%)', end=print_end)
                 sys.stdout.flush()
                 if self.real_download(url, image_full_path):
-                    print(f'{percentage}%:图片{image_id}下载完成')
+                    print(f'第{i+1}张图片{image_id}下载完成(总{percentage}%)')
                 else:
-                    print(f'{percentage}%:图片{image_id}下载失败多次，取消下载。')
+                    print(f'第{i+1}张图片{image_id}下载失败多次，已跳过下载(总{percentage}%)')
 
             else:
                 for url in image:
@@ -183,12 +184,12 @@ class Download:
                     if not os.path.exists(prefix_handled):
                         os.makedirs(prefix_handled)
 
-                    print(f'{percentage}%:正在下载图片{image_file_name}', end=print_end)
+                    print(f'第{i+1}张图片{image_id}正在下载(总{percentage}%)', end=print_end)
                     sys.stdout.flush()
                     if self.real_download(url, image_full_path):
-                        print(f'{percentage}%:图片{image_file_name}下载完成')
+                        print(f'第{i+1}张图片{image_id}下载完成(总{percentage}%)')
                     else:
-                        print(f'{percentage}%:图片{image_file_name}下载失败多次，取消下载。')
+                        print(f'第{i+1}张图片{image_id}下载失败多次，已跳过下载(总{percentage}%)')
 
         print('100%:所有图片下载完成')
 
