@@ -23,7 +23,7 @@ class UserManager:
             print("您登陆过，是否使用保存的通行证登录？")
             print("(本地仅保存登录token，我们不会保存您的密码)")
             while True:
-                command = input("1：使用保存的通行证登录 2：重新登录\n")
+                command = input("1：使用保存的通行证登录 2：重新登录\n请输入数字:")
                 if command in commands:
                     commands[command]()
                     break
