@@ -26,6 +26,10 @@ class Download:
                 continue
             break
 
+        # 如果api返回没有profile就说明此用户不存在
+        if not 'profile' in user_info:
+            print('此用户不存在!')
+            return
         user_total_bookmarks = user_info['profile']['total_illust_bookmarks_public']
         user_name = user_info['user']['name']
         # 创建的文件夹名
@@ -70,6 +74,11 @@ class Download:
                 ExceptionHandler.raise_exception()
                 continue
             break
+
+        # 如果api返回没有profile就说明此画师不存在
+        if not 'profile' in user_info:
+            print('此画师不存在!')
+            return
         user_total_illusts = user_info['profile']['total_illusts']
         user_name = user_info['user']['name']
         # 创建的文件夹名
