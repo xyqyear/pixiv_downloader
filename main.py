@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from pixivpy3 import AppPixivAPI
-from resources.login import UserManager
+from resources.managers import UserManager
 from resources.mode import ModeSwitcher
 
 user_manager = UserManager()
