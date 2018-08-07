@@ -23,11 +23,9 @@ class ModeSwitcher:
         while True:
             mode = input('请输入工作模式(1是下载画师作品,2是下载收藏夹,3是下载排行榜):')
             if mode in self.modes:
-                break
+                self.modes[mode]()
             else:
                 print('请重新输入!')
-
-        self.modes[mode]()
 
     def mode1(self):
         while True:
