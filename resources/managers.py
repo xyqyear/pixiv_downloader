@@ -17,13 +17,13 @@ class UserManager:
         self.api_object = api_object
 
     def login(self):
-        commands = {"1": self.login_with_token,
-                    "2": self.login_with_password}
+        commands = {"0": self.login_with_password,
+                    "1": self.login_with_token}
         if os.path.exists(token_file):
             print("您登陆过，是否使用保存的通行证登录？")
-            print("(本地仅保存登录token，我们不会保存您的密码)")
+            print("(本地仅保存登录token，您的密码不会被保存)")
             while True:
-                command = input("1：使用保存的通行证登录 2：重新登录\n请输入数字:")
+                command = input("0：重新登录 1：使用保存的通行证登录 \n")
                 if command in commands:
                     commands[command]()
                     break
@@ -54,7 +54,14 @@ class UserManager:
                                        password=password)
         if tokens:
             print('登陆成功!')
-            self.token_holder.tokens = tokens
+            print("是否保存登陆信息?(下次可无需密码直接登录)")
+            print("输入数字1 回车以保存. 默认不保存")
+            save_token = input()
+            if save_token == "1":
+                self.token_holder.tokens = tokens
+            else:
+                if os.path.exists(token_file):
+                    os.remove(token_file)
         else:
             print('用户名/密码错误或网络状况不好，请重新登录!')
             self.login_with_password()

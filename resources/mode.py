@@ -57,17 +57,16 @@ class ModeSwitcher:
                  '17': 'day_male_r18', '18': 'day_female_r18',
                  '19': 'day_r18_manga', '20': 'week_r18_manga'}
         while True:
-            mode_digit = input('''
-        请输入下载什么榜单，对应表如下:
-                0：日榜       3：周榜        6：月榜
-                7:新人 周榜                  8:原创 周榜
-                9：日榜，男性向              10：日榜，女性向
-                11：日榜漫画  12：周榜漫画    13：月榜漫画
-
-                14：日榜r18                  15：周榜r18     
-                17：日榜男性向r18            18：日榜女性向r18
-                19：日榜r18漫画              20：周榜r18漫画
-        请输入一个数字:''')
+            mapping_list = ["0：日榜", "3：周榜", "6：月榜",
+                            "7:新人 周榜", "8:原创 周榜", "9：日榜，男性向",
+                            "10：日榜，女性向", "11：日榜漫画", "12：周榜漫画",
+                            "13：月榜漫画", "14：日榜r18", "15：周榜r18",
+                            "17：日榜男性向r18", "19：日榜r18漫画", "20：周榜r18漫画"]
+            print("请输入下载什么榜单，对应表如下: ")
+            n_in_raw = 4
+            print("\t" + "\n\t".join(''.join(map(lambda x: x.ljust(15), mapping_list[i:i+n_in_raw])) \
+                                     for i in range(0, len(mapping_list), n_in_raw)))
+            mode_digit = input("选择模式： ")
             if mode_digit in modes:
                 mode = modes[mode_digit]
                 break
