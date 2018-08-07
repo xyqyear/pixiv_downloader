@@ -6,7 +6,7 @@ import os
 from .managers import TokenHolder
 
 # 默认存储token 位置
-token_file = "token.txt"
+token_file = "token.tkn"
 
 class UserManager:
 
