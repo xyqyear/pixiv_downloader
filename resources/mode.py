@@ -55,7 +55,8 @@ class ModeSwitcher:
                 break
             found_date = re.findall(r"(\d{4})[./\-:|](\d{1,2})[./\-:|](\d{1,2})", raw_date)[0]
             if found_date:
-                date = f"{0}-{1}-{2}"(found_date)
+                (yyyy, mm, dd) = found_date
+                date = f"{yyyy}-{mm:0>2}-{dd:0>2}"
                 break
             print('请输入正确的日期格式\n')
 
