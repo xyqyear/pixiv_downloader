@@ -1,6 +1,7 @@
 token.txt
 token.tkn
 real_test.py
+.idea/
 __pycache__/
 *.pyc
 *.spec
