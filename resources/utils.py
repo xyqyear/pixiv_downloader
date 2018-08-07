@@ -6,6 +6,7 @@ import os
 # 某些print的时候用到的end
 print_end = '\r'
 
+
 class FileHandler:
 
     @staticmethod
@@ -41,6 +42,7 @@ class FileHandler:
             .replace('>', '_').replace('|', '_') \
             .replace(':', '_').replace('?', '_').replace('*', '_')
 
+
 class ExceptionHandler:
 
     @staticmethod
@@ -51,6 +53,7 @@ class ExceptionHandler:
         """
         e = sys.exc_info()
         print(f"Error '{e[1]}' happened on line {e[2].tb_lineno}")
+
 
 class ProcessAnimationMaker:
 
@@ -65,6 +68,7 @@ class ProcessAnimationMaker:
             self.present_action_index += 1
         print(self.actions[self.present_action_index], end=print_end)
         sys.stdout.flush()
+
 
 def get_yesterday_date():
     yesterday = datetime.today() + timedelta(-1)

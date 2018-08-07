@@ -5,6 +5,7 @@ import json
 
 from .utils import ExceptionHandler
 
+
 class TokenHolder:
 
     @staticmethod
@@ -17,19 +18,17 @@ class TokenHolder:
         return {'access_token':token_json['response']['access_token'],
                 'refresh_token':token_json['response']['refresh_token']}
 
-    @staticmethod
-    def save(tokens_dict):
+    def _save(self, tokens_dict, token_file="token.tkn"):
         """
         保存token到文件
         :param tokens_dict: 
         :return: 
         """
-        with open('token.txt', 'wb') as f:
+        with open(token_file, 'wb') as f:
             token_json = json.dumps(tokens_dict)
             f.write(base64.b85encode(token_json.encode('utf-8')))
 
-    @staticmethod
-    def load(token_file):
+    def _load(self, token_file="token.tkn"):
         """
         从文件中读取token
         :return: 
@@ -39,8 +38,10 @@ class TokenHolder:
             tokens_dict = json.loads(token_json)
         return tokens_dict
 
-    def auth(self, api_object, username = str(), password = str(),
-                         access_token = str(), refresh_token = str()):
+    tokens = property(_load, _save)
+
+    def auth(self, api_object, username=str(), password=str(),
+                         access_token=str(), refresh_token=str()):
         """
         登录验证
         第一次登录就只传入用户密码
@@ -56,8 +57,8 @@ class TokenHolder:
         :return: token字典
         """
 
-        tokens = {'access_token':access_token,
-                  'refresh_token':refresh_token}
+        tokens = {'access_token': access_token,
+                  'refresh_token': refresh_token}
 
         # 如果传入了用户名密码就进行初次登录验证
         # 如果登录出错就认为是用户名密码错误
@@ -95,6 +96,7 @@ class TokenHolder:
             tokens = None
 
         return tokens
+
 
 class UrlManager:
 

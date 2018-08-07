@@ -1,16 +1,17 @@
 # -*- coding:utf-8 -*-
 import re
 
-from .features import download_works, download_bookmarks, download_ranking
+from .downloader import Download
 from .utils import get_yesterday_date
+
 
 class ModeSwitcher:
 
     def __init__(self, api_object):
-        self.modes = {"1":self.mode1,
-                      "2":self.mode2,
-                      "3":self.mode3,
-                      "4":self.mode4}
+        self.modes = {"1": self.mode1,
+                      "2": self.mode2,
+                      "3": self.mode3,
+                      "4": self.mode4}
         self.api_object = api_object
     
     def start(self):
@@ -35,7 +36,7 @@ class ModeSwitcher:
             else:
                 print('请输入正确的画师uid!')
 
-        download_works(self.api_object, uid)
+        Download.works(self.api_object, uid)
 
     def mode2(self):
         while True:
@@ -45,17 +46,19 @@ class ModeSwitcher:
             else:
                 print('请输入正确的用户uid!')
 
-        download_bookmarks(self.api_object, uid)
+        Download.bookmarks(self.api_object, uid)
 
     def mode3(self):
         while True:
-            date = input('请输入下载日期，格式为 2018-01-01(如果是个位数日期需要在前面加0)\n如果需要下载昨天的，请直接回车:')
-            if date == '':
+            raw_date = input('请输入下载日期，格式为 yyyy-mm-dd  分隔符可用. / - : | 或空格\n如果需要下载昨天的，请直接回车:')
+            if raw_date == '':
                 date = get_yesterday_date()
                 break
-            if re.findall(r'\d{4}-\d{2}-\d{2}', date):
+            found_date = re.findall(r"\d{4}[./\-:|]\d{1,2}[./\-:|]\d{1,2}", raw_date)
+            if found_date:
+                date = f"{0}-{1}-{2}"(found_date)
                 break
-            print('请输入正确的日期格式\n（提示：如果是 二零一八年一月一号需要写成 2018-01-01 而不是 2018-1-1）')
+            print('请输入正确的日期格式\n')
 
         modes = {'0': 'day', '1': 'day_original', '2': 'day_rookie',
                  '3': 'week', '4': 'week_original', '5': 'week_rookie',
@@ -85,7 +88,7 @@ class ModeSwitcher:
             else:
                 print('请输入正确的模式')
 
-        download_ranking(self.api_object, date, mode)
+        Download.ranking(self.api_object, date, mode)
 
     def mode4(self):
         import json

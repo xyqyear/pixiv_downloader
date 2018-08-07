@@ -8,19 +8,20 @@ from .managers import TokenHolder
 # 默认存储token 位置
 token_file = "token.txt"
 
+
 class UserManager:
 
     def login(self, api_object):
         token_holder = TokenHolder()
         if os.path.exists(token_file):
             print("您登陆过，正在验证...")
-            tokens = token_holder.load(token_file)
+            stored_tokens = token_holder.tokens
             tokens = token_holder.auth(api_object,
-                                      access_token=tokens['access_token'],
-                                      refresh_token=tokens['refresh_token'])
+                                      access_token=stored_tokens['access_token'],
+                                      refresh_token=stored_tokens['refresh_token'])
             if tokens:
                 print('登陆成功！')
-                token_holder.save(tokens)
+                token_holder.tokens = tokens
             
             else:
                 print('旧的登录信息已经失效，请重新用用户名密码登录')
@@ -36,8 +37,8 @@ class UserManager:
                                       password=password)
             if tokens:
                 print('登陆成功!')
-                token_holder.save(tokens)
+                token_holder.tokens = tokens
 
             else:
-                print('登陆失败或网络状况不好，请重新登录!')
+                print('用户名/密码错误或网络状况不好，请重新登录!')
                 self.login(api_object)

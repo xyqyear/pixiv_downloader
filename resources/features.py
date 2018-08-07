@@ -124,6 +124,8 @@ def download_ranking(api_object, date, mode):
             animation_maker.next_action()
 
         else:
+            # 动画放完之后换行
+            print()
             break
 
     download_images(image_urls, prefix)
