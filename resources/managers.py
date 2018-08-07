@@ -4,6 +4,7 @@ import base64
 import json
 
 from .utils import ExceptionHandler
+from .login import token_file
 
 
 class TokenHolder:
@@ -18,7 +19,7 @@ class TokenHolder:
         return {'access_token':token_json['response']['access_token'],
                 'refresh_token':token_json['response']['refresh_token']}
 
-    def _save(self, tokens_dict, token_file="token.tkn"):
+    def _save(self, tokens_dict):
         """
         保存token到文件
         :param tokens_dict: 
@@ -28,7 +29,7 @@ class TokenHolder:
             token_json = json.dumps(tokens_dict)
             f.write(base64.b85encode(token_json.encode('utf-8')))
 
-    def _load(self, token_file="token.tkn"):
+    def _load(self):
         """
         从文件中读取token
         :return: 
