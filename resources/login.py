@@ -8,7 +8,6 @@ from .managers import TokenHolder
 # 默认存储token 位置
 token_file = "token.txt"
 
-
 class UserManager:
 
     def login(self, api_object):

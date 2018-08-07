@@ -183,7 +183,8 @@ class Download:
 
         print('100&:所有图片下载完成')
 
-    def check_prefix(self, prefix):
+    @staticmethod
+    def check_prefix(prefix):
         """
         检查画师是否改名了
         如果prefix的后面两个东西存在于子目录名中
@@ -196,7 +197,8 @@ class Download:
             if id_and_mode in dir_:
                 os.rename(dir_, prefix)
 
-    def check_images(self, urls_list, prefix):
+    @staticmethod
+    def check_images(urls_list, prefix):
         """
         从列表中去除下载过的图片
         :param urls_list:
@@ -221,7 +223,8 @@ class Download:
         for image in to_remove_image:
             urls_list.remove(image)
 
-    def real_download(self, url, path, retry_count = 4):
+    @staticmethod
+    def real_download(url, path, retry_count = 4):
         """
         下载图片
         :param url:

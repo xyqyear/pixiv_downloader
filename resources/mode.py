@@ -13,7 +13,8 @@ class ModeSwitcher:
                       "3": self.mode3,
                       "4": self.mode4}
         self.api_object = api_object
-    
+        self.download = Download()
+
     def start(self):
         """
         确定工作模式并工作
@@ -36,7 +37,7 @@ class ModeSwitcher:
             else:
                 print('请输入正确的画师uid!')
 
-        Download.works(self.api_object, uid)
+        self.download.works(self.api_object, uid)
 
     def mode2(self):
         while True:
@@ -46,7 +47,7 @@ class ModeSwitcher:
             else:
                 print('请输入正确的用户uid!')
 
-        Download.bookmarks(self.api_object, uid)
+        self.download.bookmarks(self.api_object, uid)
 
     def mode3(self):
         while True:
@@ -54,7 +55,7 @@ class ModeSwitcher:
             if raw_date == '':
                 date = get_yesterday_date()
                 break
-            found_date = re.findall(r"\d{4}[./\-:|]\d{1,2}[./\-:|]\d{1,2}", raw_date)
+            found_date = re.findall(r"(\d{4})[./\-:|](\d{1,2})[./\-:|](\d{1,2})", raw_date)[0]
             if found_date:
                 date = f"{0}-{1}-{2}"(found_date)
                 break
@@ -88,7 +89,7 @@ class ModeSwitcher:
             else:
                 print('请输入正确的模式')
 
-        Download.ranking(self.api_object, date, mode)
+        self.download.ranking(self.api_object, date, mode)
 
     def mode4(self):
         import json
