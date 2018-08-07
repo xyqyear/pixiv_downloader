@@ -4,11 +4,12 @@ from pixivpy3 import AppPixivAPI
 from resources.managers import UserManager
 from resources.mode import ModeSwitcher
 
-user_manager = UserManager()
+
 
 if __name__ == '__main__':
     aapi = AppPixivAPI()
+    user_manager = UserManager()
+    mode_switcher = ModeSwitcher(aapi)
 
     user_manager.login(aapi)
-    new_mode_switcher = ModeSwitcher(aapi)
-    new_mode_switcher.start()
+    mode_switcher.start()
