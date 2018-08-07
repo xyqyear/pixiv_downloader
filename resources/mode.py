@@ -48,19 +48,7 @@ class ModeSwitcher:
         self.download.bookmarks(self.api_object, uid)
 
     def mode3(self):
-        while True:
-            raw_date = input('请输入下载日期，格式为 yyyy-mm-dd  分隔符可用. / - : | 或空格\n如果需要下载昨天的，请直接回车:')
-            if raw_date == '':
-                date = get_yesterday_date()
-                break
-            found_date = re.findall(r"(\d{4})[./\-:|](\d{1,2})[./\-:|](\d{1,2})", raw_date)[0]
-            if found_date:
-                (yyyy, mm, dd) = found_date
-                date = f"{yyyy}-{mm:0>2}-{dd:0>2}"
-                break
-            print('请输入正确的日期格式\n')
-
-        modes = {'0': 'day','3': 'week','6': 'month',
+        modes = {'0': 'day', '3': 'week', '6': 'month',
                  '7': 'week_rookie', '8': 'week_original',
                  '9': 'day_male', '10': 'day_female',
                  '11': 'day_manga', '12': 'week_manga', '13': 'month_manga',
@@ -70,21 +58,33 @@ class ModeSwitcher:
                  '19': 'day_r18_manga', '20': 'week_r18_manga'}
         while True:
             mode_digit = input('''
-请输入下载什么榜单，对应表如下:
-        0：日榜       3：周榜        6：月榜
-        7:新人 周榜                  8:原创 周榜
-        9：日榜，男性向              10：日榜，女性向
-        11：日榜漫画  12：周榜漫画    13：月榜漫画
+        请输入下载什么榜单，对应表如下:
+                0：日榜       3：周榜        6：月榜
+                7:新人 周榜                  8:原创 周榜
+                9：日榜，男性向              10：日榜，女性向
+                11：日榜漫画  12：周榜漫画    13：月榜漫画
 
-        14：日榜r18                  15：周榜r18     
-        17：日榜男性向r18            18：日榜女性向r18
-        19：日榜r18漫画              20：周榜r18漫画
-请输入一个数字:''')
+                14：日榜r18                  15：周榜r18     
+                17：日榜男性向r18            18：日榜女性向r18
+                19：日榜r18漫画              20：周榜r18漫画
+        请输入一个数字:''')
             if mode_digit in modes:
                 mode = modes[mode_digit]
                 break
             else:
                 print('请输入正确的模式')
+
+        while True:
+            raw_date = input('请输入下载日期，格式为 年-月-日(例如2018-1-1)  分隔符可用 . / - : | \n如果需要下载昨天的，请直接回车:')
+            if raw_date == '':
+                date = get_yesterday_date()
+                break
+            found_date = re.findall(r"(\d{4})[./\-:|](\d{1,2})[./\-:|](\d{1,2})", raw_date)[0]
+            if found_date:
+                (yyyy, mm, dd) = found_date
+                date = f"{yyyy}-{mm:0>2}-{dd:0>2}"
+                break
+            print('请输入正确的日期格式\n')
 
         self.download.ranking(self.api_object, date, mode)
 
