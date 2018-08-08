@@ -1,9 +1,13 @@
 # coding = utf-8
 
+# 选择下载模式
+
 
 class ModeSwitch:
 
     def __init__(self, pipe):
+        # 目前版本中这里pipe 没有被使用，
+        # 因为当前pipe 无法直接传输
         self.pipe = pipe
         self.modes = {"bookmarks": self.bookmarks,
                       "painter": self.painter,
