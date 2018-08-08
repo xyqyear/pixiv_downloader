@@ -157,8 +157,8 @@ class Download:
         if not os.path.exists(prefix):
             os.makedirs(prefix)
 
-        length = sum(len(i) for i in urls_list)
-        print(f'即将下载{length}张图片')
+        image_num = sum(len(i) for i in urls_list)
+        print(f'即将下载{image_num}张图片')
         download_count = 0
 
         for bag in urls_list:
@@ -176,15 +176,17 @@ class Download:
             for url in bag:
                 image_file_name = os.path.basename(url)
                 image_full_path = os.path.join(path_prefix, image_file_name)
-                download_count += 1
-                percentage = 100 * download_count/length
 
-                print(f'第{download_count}张图片{image_id}正在下载(总{percentage:.1f}%)', end=print_end)
+                download_count += 1
+                display_name = os.path.splitext(image_file_name)[0]
+                percentage = 100 * download_count/image_num
+
+                print(f'第{download_count}张图片{display_name}正在下载(总{percentage:.1f}%)', end=print_end)
                 sys.stdout.flush()
                 if self.real_download(url, image_full_path):
-                    print(f'第{download_count}张图片{image_id}下载完成(总{percentage:.1f}%)')
+                    print(f'第{download_count}张图片{display_name}下载完成(总{percentage:.1f}%)')
                 else:
-                    print(f'第{download_count}张图片{image_id}下载失败多次，已跳过下载(总{percentage:.1f}%)')
+                    print(f'第{download_count}张图片{display_name}下载失败多次，已跳过下载(总{percentage:.1f}%)')
 
         print('所有图片下载完成')
 

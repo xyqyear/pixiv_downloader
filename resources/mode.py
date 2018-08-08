@@ -66,7 +66,7 @@ class ModeSwitcher:
             n_in_raw = 4
             print("\t" + "\n\t".join(''.join(map(lambda x: x.ljust(15), mapping_list[i:i+n_in_raw]))
                                      for i in range(0, len(mapping_list), n_in_raw)))
-            mode_digit = input("选择模式： ")
+            mode_digit = input("选择模式(输入数字)： ")
             if mode_digit in modes:
                 mode = modes[mode_digit]
                 break
