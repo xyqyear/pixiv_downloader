@@ -55,10 +55,11 @@ class Download:
                 sys.stdout.flush()
 
             else:
-                print(f'拉取完成，即将下载{len(image_urls)}张图片')
+                urls = self.check_images(image_urls, prefix)
+                print(f'拉取完成，即将下载{len(urls)}张图片')
                 break
 
-        self.images(image_urls, prefix)
+        self.download_images(urls, prefix)
 
     def works(self, api_object, user_uid):
         """
@@ -102,10 +103,11 @@ class Download:
                 sys.stdout.flush()
 
             else:
-                print(f'拉取完成，即将下载{len(image_urls)}张图片')
+                urls = self.check_images(image_urls, prefix)
+                print(f'拉取完成，即将下载{len(urls)}张图片')
                 break
 
-        self.images(image_urls, prefix)
+        self.download_images(urls, prefix)
 
     def ranking(self, api_object, date, mode):
         """
@@ -136,13 +138,14 @@ class Download:
                 animation_maker.next_action()
 
             else:
-                print(f'拉取完成，即将下载{len(image_urls)}张图片')
+                urls = self.check_images(image_urls, prefix)
+                print(f'拉取完成，即将下载{len(urls)}张图片')
                 break
 
-        self.images(image_urls, prefix)
+        self.download_images(urls, prefix)
 
     # 以下几个函数是相关联的，就不放在不同的模块里面了
-    def images(self, urls_list, prefix):
+    def download_images(self, urls_list, prefix):
         """
         下载图片列表
         还得检测画师名是不是变了，变了就要改文件夹名字
@@ -154,44 +157,35 @@ class Download:
         if not os.path.exists(prefix):
             os.makedirs(prefix)
 
-        self.check_images(urls_list, prefix)
-        length = len(urls_list)
-        for i in range(length):
-            image = urls_list[i]
-            percentage = int((i/length)*100)
-            if len(image) == 1:
-                url = image[0]
+        length = sum(len(i) for i in urls_list)
+        download_count = 0
 
-                image_id = re.split(r'[/_]', url)[-2]
+        for bag in urls_list:
+            image_id = re.split(r'[/_]', bag[0])[-2]
+            # 如果只有一张图片就放在同一层级
+            if len(bag) == 1:
+                path_prefix = prefix
+            # 如果有多张图片则放入文件夹
+            else:
+                path_prefix = os.path.join(prefix, image_id)
+                # 文件夹不存在就创建
+                if not os.path.exists(path_prefix):
+                    os.makedirs(path_prefix)
+
+            for url in bag:
                 image_file_name = os.path.basename(url)
-                image_full_path = os.path.join(prefix, image_file_name)
+                image_full_path = os.path.join(path_prefix, image_file_name)
+                download_count += 1
+                percentage = 100 * download_count/length
 
-                print(f'第{i+1}张图片{image_id}正在下载(总{percentage}%)', end=print_end)
+                print(f'第{download_count}张图片{image_id}正在下载(总{percentage:.1f}%)', end=print_end)
                 sys.stdout.flush()
                 if self.real_download(url, image_full_path):
-                    print(f'第{i+1}张图片{image_id}下载完成(总{percentage}%)')
+                    print(f'第{download_count}张图片{image_id}下载完成(总{percentage:.1f}%)')
                 else:
-                    print(f'第{i+1}张图片{image_id}下载失败多次，已跳过下载(总{percentage}%)')
+                    print(f'第{download_count}张图片{image_id}下载失败多次，已跳过下载(总{percentage:.1f}%)')
 
-            else:
-                for url in image:
-                    image_id = re.split(r'[/_]', url)[-2]
-                    prefix_handled = os.path.join(prefix, image_id)
-                    image_file_name = os.path.basename(url)
-                    image_full_path = os.path.join(prefix_handled, image_file_name)
-
-                    # 文件夹不存在就创建
-                    if not os.path.exists(prefix_handled):
-                        os.makedirs(prefix_handled)
-
-                    print(f'第{i+1}张图片{image_id}正在下载(总{percentage}%)', end=print_end)
-                    sys.stdout.flush()
-                    if self.real_download(url, image_full_path):
-                        print(f'第{i+1}张图片{image_id}下载完成(总{percentage}%)')
-                    else:
-                        print(f'第{i+1}张图片{image_id}下载失败多次，已跳过下载(总{percentage}%)')
-
-        print('100%:所有图片下载完成')
+        print('所有图片下载完成')
 
     @staticmethod
     def check_prefix(prefix):
@@ -232,6 +226,7 @@ class Download:
 
         for image in to_remove_image:
             urls_list.remove(image)
+        return urls_list
 
     @staticmethod
     def real_download(url, path, retry_count = 4):
