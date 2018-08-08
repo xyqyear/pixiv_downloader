@@ -35,8 +35,8 @@ class UserManager:
     def login_with_token(self):
         stored_tokens = self.token_holder.tokens
         tokens = self.token_holder.auth(self.api_object,
-                                       access_token=stored_tokens['access_token'],
-                                       refresh_token=stored_tokens['refresh_token'])
+                                        access_token=stored_tokens['access_token'],
+                                        refresh_token=stored_tokens['refresh_token'])
         if tokens:
             print('登陆成功！')
             self.token_holder.tokens = tokens
@@ -50,12 +50,12 @@ class UserManager:
         username = input('请输入用户名(或邮箱地址): ')
         password = getpass.getpass('请输入密码: ')
         tokens = self.token_holder.auth(self.api_object,
-                                       username=username,
-                                       password=password)
+                                        username=username,
+                                        password=password)
         if tokens:
             print('登陆成功!')
             print("是否保存登陆信息?(下次可无需密码直接登录)")
-            print("输入数字1 回车以保存. 默认不保存")
+            print("输入数字1 回车以保存. 直接回车不保存:")
             save_token = input()
             if save_token == "1":
                 self.token_holder.tokens = tokens
@@ -76,8 +76,8 @@ class TokenHolder:
         :param token_json: 
         :return: 
         """
-        return {'access_token':token_json['response']['access_token'],
-                'refresh_token':token_json['response']['refresh_token']}
+        return {'access_token': token_json['response']['access_token'],
+                'refresh_token': token_json['response']['refresh_token']}
 
     def _save(self, tokens_dict):
         """
