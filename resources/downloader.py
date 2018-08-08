@@ -56,7 +56,7 @@ class Download:
 
             else:
                 urls = self.check_images(image_urls, prefix)
-                print(f'拉取完成，即将下载{len(urls)}张图片')
+                print(f'拉取完成')
                 break
 
         self.download_images(urls, prefix)
@@ -104,7 +104,7 @@ class Download:
 
             else:
                 urls = self.check_images(image_urls, prefix)
-                print(f'拉取完成，即将下载{len(urls)}张图片')
+                print('拉取完成.')
                 break
 
         self.download_images(urls, prefix)
@@ -139,7 +139,7 @@ class Download:
 
             else:
                 urls = self.check_images(image_urls, prefix)
-                print(f'拉取完成，即将下载{len(urls)}张图片')
+                print(f'拉取完成')
                 break
 
         self.download_images(urls, prefix)
@@ -158,6 +158,7 @@ class Download:
             os.makedirs(prefix)
 
         length = sum(len(i) for i in urls_list)
+        print(f'即将下载{length}张图片')
         download_count = 0
 
         for bag in urls_list:
