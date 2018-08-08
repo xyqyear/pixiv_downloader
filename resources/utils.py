@@ -10,7 +10,7 @@ print_end = '\r'
 class FileHandler:
 
     @staticmethod
-    def getfile(dir_,ext = None):
+    def getfile(dir_, ext=None):
         """
         获取特定路径下面的全部文件的路径
         :param dir_: 文件夹名
@@ -19,7 +19,7 @@ class FileHandler:
         """
         allfiles = []
         need_ext_filter = (ext is not None)
-        for root,dirs,files in os.walk(dir_):
+        for root, dirs, files in os.walk(dir_):
             for files_path in files:
                 file_path = os.path.join(root, files_path)
                 extension = os.path.splitext(file_path)[1][1:]
@@ -51,8 +51,14 @@ class ExceptionHandler:
         打印错误
         :return: 
         """
-        e = sys.exc_info()
-        print(f"Error '{e[1]}' happened on line {e[2].tb_lineno}")
+        f_code_object = sys._getframe(1).f_code
+        exception_file_name = os.path.split(f_code_object.co_filename)[1]
+        exception_function = f_code_object.co_name
+        exception_info = sys.exc_info()
+        print(f"Error '{exception_info[1]}' happened on "
+              f"file {exception_file_name},"
+              f"function {exception_function},"
+              f"line {exception_info[2].tb_lineno}")
 
 
 class ProcessAnimationMaker:

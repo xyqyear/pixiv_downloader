@@ -64,7 +64,7 @@ class ModeSwitcher:
                             "17：日榜男性向r18", "19：日榜r18漫画", "20：周榜r18漫画"]
             print("请输入下载什么榜单，对应表如下: ")
             n_in_raw = 4
-            print("\t" + "\n\t".join(''.join(map(lambda x: x.ljust(15), mapping_list[i:i+n_in_raw])) \
+            print("\t" + "\n\t".join(''.join(map(lambda x: x.ljust(15), mapping_list[i:i+n_in_raw]))
                                      for i in range(0, len(mapping_list), n_in_raw)))
             mode_digit = input("选择模式： ")
             if mode_digit in modes:

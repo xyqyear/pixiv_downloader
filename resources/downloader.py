@@ -27,7 +27,7 @@ class Download:
             break
 
         # 如果api返回没有profile就说明此用户不存在
-        if not 'profile' in user_info:
+        if 'profile' not in user_info:
             print('此用户不存在!')
             return
         user_total_bookmarks = user_info['profile']['total_illust_bookmarks_public']
@@ -77,7 +77,7 @@ class Download:
             break
 
         # 如果api返回没有profile就说明此画师不存在
-        if not 'profile' in user_info:
+        if 'profile' not in user_info:
             print('此画师不存在!')
             return
         user_total_illusts = user_info['profile']['total_illusts']
@@ -230,7 +230,7 @@ class Download:
         return urls_list
 
     @staticmethod
-    def real_download(url, path, retry_count = 4):
+    def real_download(url, path, retry_count=4):
         """
         下载图片
         :param url:

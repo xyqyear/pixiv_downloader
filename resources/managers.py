@@ -102,7 +102,7 @@ class TokenHolder:
     tokens = property(_load, _save)
 
     def auth(self, api_object, username=str(), password=str(),
-                         access_token=str(), refresh_token=str()):
+             access_token=str(), refresh_token=str()):
         """
         登录验证
         第一次登录就只传入用户密码
