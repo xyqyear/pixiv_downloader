@@ -1,14 +1,15 @@
-# -*- coding:utf-8 -*-
+# coding = utf-8
 
-from pixivpy3 import AppPixivAPI
-from resources.managers import UserManager
-from resources.mode import ModeSwitcher
+from resources import front_end, back_end
+import queue
 
+if __name__ == "__main__":
 
-if __name__ == '__main__':
-    aapi = AppPixivAPI()
-    user_manager = UserManager(aapi)
-    mode_switcher = ModeSwitcher(aapi)
+    communicator = queue.Queue(20)
 
-    user_manager.login()
-    mode_switcher.start()
+    front = front_end.FrontEnd(communicator)
+    back = back_end.BackEnd(communicator)
+
+    thread_list = [front, back]
+    for t in thread_list:
+        t.start()
