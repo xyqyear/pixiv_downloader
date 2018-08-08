@@ -1,8 +1,9 @@
 
-class command:
+class Pack:
 
     def __init__(self, info):
         self.info = info
 
 
-commands = {"get_login_info": command("get_login_info")}
+commands = {"login_info": Pack("get_login_info"),
+            "working_mode": Pack("get_working_mode")}
