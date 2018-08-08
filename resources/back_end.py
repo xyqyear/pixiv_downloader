@@ -1,6 +1,6 @@
 # coding = utf-8
 
-from threading import Thread
+from multiprocessing.dummy import Process
 from .back_utils import handshaker, mode_switch
 from .protocol import commands
 
@@ -8,13 +8,11 @@ login = handshaker.Handshaker()
 switch = mode_switch.ModeSwitch()
 
 
-class BackEnd(Thread):
+class BackEnd(Process):
 
-    def __init__(self, communicator, t_lock, t_event):
-        Thread.__init__(self)
+    def __init__(self, communicator, t_lock):
         self.communicator = communicator
         self.lock = t_lock
-        self.event = t_event
 
     def run(self):
         self.lock_print("Backend.run()")
@@ -28,10 +26,8 @@ class BackEnd(Thread):
         downloader.start()
 
     def acquire(self, command):
-        self.communicator.put(commands[command])
-        self.event.clear()
-        self.event.wait()
-        pack = self.communicator.get()
+        self.communicator.send(commands[command])
+        pack = self.communicator.recv()
         info = pack.info
         return info
 
@@ -44,5 +40,5 @@ class BackEnd(Thread):
 
 if __name__ == "__main__":
 
-    thread1 = BackEnd()
+    thread1 = BackEnd(None, None)
     thread1.start()

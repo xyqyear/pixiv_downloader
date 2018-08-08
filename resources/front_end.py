@@ -1,17 +1,15 @@
 # coding = utf-8
 
-from threading import Thread
+from multiprocessing.dummy import Process
 from .protocol import Pack
 import getpass
 
 
-class FrontEnd(Thread):
+class FrontEnd(Process):
 
-    def __init__(self, communicator, t_lock, t_event):
-        Thread.__init__(self)
+    def __init__(self, communicator, t_lock):
         self.communicator = communicator
         self.lock = t_lock
-        self.event = t_event
         self.mapping = {"get_login_info": self.send_login_info,
                         "get_working_mode": self.send_working_mode}
 
@@ -28,22 +26,19 @@ class FrontEnd(Thread):
         username = input('请输入用户名(或邮箱地址): ')
         password = getpass.getpass('请输入密码: ')
         login_info = (username, password)
-        self.communicator.put(Pack(login_info))
+        self.communicator.send(Pack(login_info))
         self.lock_print("Frontend sent login info")
-        self.event.clear()
 
     def send_working_mode(self):
         print("选择工作模式：")
         print("1: 下载画师作品  2: 下载收藏夹  3: 下载排行榜")
         working_mode = input()
-        self.communicator.put(Pack(working_mode))
-        self.event.clear()
+        self.communicator.send(Pack(working_mode))
 
     def wait_for_command(self):
         while self.communicator.empty():
             pass
-        pack = self.communicator.get()
-        self.event.clear()
+        pack = self.communicator.recv()
         return pack.info
 
     def lock_print(self, text):
