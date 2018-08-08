@@ -3,7 +3,8 @@
 
 class ModeSwitch:
 
-    def __init__(self):
+    def __init__(self, pipe):
+        self.pipe = pipe
         self.modes = {"bookmarks": self.bookmarks,
                       "painter": self.painter,
                       "ranking": self.ranking}
@@ -12,10 +13,16 @@ class ModeSwitch:
         return self.modes[working_mode]
 
     def bookmarks(self):
-        pass
+        # 正式版此处应为通过self.pipe 向前端报告工作进度
+        # print 仅为测试用
+        print("bookmark downloader start")
 
     def painter(self):
-        pass
+        # 正式版此处应为通过self.pipe 向前端报告工作进度
+        # print 仅为测试用
+        print("painter downloader start")
 
     def ranking(self):
-        pass
+        # 正式版此处应为通过self.pipe 向前端报告工作进度
+        # print 仅为测试用
+        print("ranking downloader start")

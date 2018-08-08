@@ -2,5 +2,5 @@
 
 class Handshaker:
 
-    def start(self, login_info):
-        pass
+    def start(self, username, password):
+        return True

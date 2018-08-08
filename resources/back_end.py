@@ -5,14 +5,16 @@ from .back_utils import handshaker, mode_switch
 from .protocol import commands
 
 login = handshaker.Handshaker()
-switch = mode_switch.ModeSwitch()
 
 
 class BackEnd(Process):
 
-    def __init__(self, communicator, t_lock):
+    def __init__(self, communicator, t_lock, parent):
+        Process.__init__(self)
+        self.switch = mode_switch.ModeSwitch(communicator)
         self.communicator = communicator
         self.lock = t_lock
+        self._parent = parent
 
     def run(self):
         self.lock_print("Backend.run()")
@@ -20,10 +22,15 @@ class BackEnd(Process):
         login_info = self.acquire("login_info")
         self.lock_print(f"Backend got login_info: {login_info}")
         self.lock_print("Backend login start")
-        login.start(*login_info)
-        working_mode = self.acquire("working_mode")
-        downloader = switch.choose(working_mode)
-        downloader.start()
+        login_success = login.start(*login_info)
+        self.lock_print(f"Backend login_success: {login_success}")
+        while True:
+            self.lock_print("Backend acquire working mode")
+            working_mode = self.acquire("working_mode")
+            self.lock_print(f"Backend got working_mode: {working_mode}")
+            downloader = self.switch.choose(working_mode)
+            downloader()
+            self.lock_print("---- Backend download finish ----")
 
     def acquire(self, command):
         self.communicator.send(commands[command])
@@ -39,6 +46,5 @@ class BackEnd(Process):
 
 
 if __name__ == "__main__":
-
     thread1 = BackEnd(None, None)
     thread1.start()
