@@ -1,13 +1,12 @@
 # coding = utf-8
 
-# 选择下载模式
+from .downloader import Download
 
 
+# choose 方法选择下载模式并返回用于下载的方法对象
 class ModeSwitch:
 
     def __init__(self, pipe):
-        # 目前版本中这里pipe 没有被使用，
-        # 因为当前pipe 无法直接传输
         self.pipe = pipe
         self.modes = {"bookmarks": self.bookmarks,
                       "painter": self.painter,
@@ -33,3 +32,10 @@ class ModeSwitch:
         # print 仅为测试用
         self.pipe.set("开始下载排行榜", "data")
         print("ranking downloader start")
+
+    def test(self):
+
+    def require(self, command):
+        self.pipe.set(command, "command")
+        info = self.pipe.get()
+        return info

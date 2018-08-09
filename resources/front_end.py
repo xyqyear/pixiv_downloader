@@ -78,6 +78,6 @@ class FrontEnd(Process):
         return info
 
     def lock_print(self, text):
-        self.lock.acquire()
+        self.lock.require()
         print(text)
         self.lock.release()

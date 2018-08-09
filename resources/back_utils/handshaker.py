@@ -1,10 +1,8 @@
 # coding = utf-8
 
 from pixivpy3 import AppPixivAPI
-import base64
-import json
-import os
 
+from .managers import TokenHolder
 from .utils import ExceptionHandler
 
 aapi = AppPixivAPI()
@@ -15,21 +13,20 @@ class HandShaker:
 
     def __init__(self, pipe):
         self.pipe = pipe
-        self.token_file = "token.tkn"
-        self.token_holder = TokenHolder(self.token_file)
+        self.token_holder = TokenHolder()
         self.tokens = None
         self.api_object = aapi
 
     def start(self):
         if self.token_holder.exist_token():
-            login_strategy = self.acquire("login_strategy")["value"]
+            login_strategy = self.require("login_strategy")["value"]
             if login_strategy == "token":
                 self.login_with_token()
             elif login_strategy == "password":
                 self.login_with_password()
         else:
             self.login_with_password()
-        save_token = self.acquire("token_strategy")["value"]
+        save_token = self.require("token_strategy")["value"]
         print(f"Handshaker got token_strategy: {save_token}")
         if save_token == True:
             self.token_holder.tokens = self.tokens
@@ -48,9 +45,9 @@ class HandShaker:
 
     def login_with_password(self):
         self.pipe.set("请输入用户名(或邮箱地址)和密码来登录", "data")
-        username = self.acquire("get_username")["value"]
+        username = self.require("get_username")["value"]
         self.pipe.set(f"Handshaker got username: {username}")
-        password = self.acquire("get_password")["value"]
+        password = self.require("get_password")["value"]
         self.pipe.set(f"Handshaker got password: {password}")
         self.tokens = self.auth(login_method="password",
                                 login_info=(username, password))
@@ -96,47 +93,7 @@ class HandShaker:
 
         return tokens
 
-    def acquire(self, command):
+    def require(self, command):
         self.pipe.set(command, "command")
         info = self.pipe.get()
         return info
-
-
-class TokenHolder:
-
-    def __init__(self, token_file):
-        self.token_file = token_file
-
-    def parse_token_response(self, token_json):
-        """
-        从auth方法返回值中解析出token
-        :param token_json:
-        :return:
-        """
-        return {'access_token': token_json['response']['access_token'],
-                'refresh_token': token_json['response']['refresh_token']}
-
-    def exist_token(self):
-        return os.path.exists(self.token_file)
-
-    def remove_token(self):
-        if self.exist_token():
-            os.remove(self.token_file)
-
-    def _save(self, tokens_dict):
-        token_json = json.dumps(tokens_dict)
-        encoded_token = base64.b85encode(token_json.encode('utf-8'))
-        with open(self.token_file, "wb") as f:
-            f.write(encoded_token)
-
-    def _load(self):
-        if self.exist_token():
-            with open(self.token_file, "rb") as f:
-                encoded_token = f.read()
-            token_json = base64.b85decode(encoded_token).decode("utf-8")
-            tokens_dict = json.loads(token_json)
-        else:
-            tokens_dict = None
-        return tokens_dict
-
-    tokens = property(_load, _save)

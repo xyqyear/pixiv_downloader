@@ -25,7 +25,7 @@ class BackEnd(Process):
         while True:
             # 询问前端工作模式并进行下载
             self.lock_print("Backend acquire working mode")
-            working_mode = self.acquire("get_working_mode")["value"]
+            working_mode = self.require("get_working_mode")["value"]
             self.lock_print(f"Backend got working_mode: {working_mode}")
             downloader = self.switch.choose(working_mode)
             downloader()
@@ -33,14 +33,14 @@ class BackEnd(Process):
 
     # 向前端要求数据的方法. 此实现有风险，若前端因某些原因无回传数据会死锁
     # 后续尝试改进
-    def acquire(self, command):
+    def require(self, command):
         self.communicator.set(command, "command")
         info = self.communicator.get()
         return info
 
     # 用于测试时的带锁print
     def lock_print(self, text):
-        self.lock.acquire()
+        self.lock.require()
         print(text)
         self.lock.release()
 
