@@ -17,7 +17,7 @@ class HandShaker:
         self.pipe = pipe
         self.token_file = "token.tkn"
         self.token_holder = TokenHolder(self.token_file)
-        self.tokens = self.token_holder.tokens
+        self.tokens = None
         self.api_object = aapi
 
     def start(self):
@@ -30,15 +30,16 @@ class HandShaker:
         else:
             self.login_with_password()
         save_token = self.acquire("token_strategy")["value"]
+        print(f"Handshaker got token_strategy: {save_token}")
         if save_token == True:
-            self.token_holder.save_token()
+            self.token_holder.tokens = self.tokens
         else:
             self.token_holder.remove_token()
         return True
 
     def login_with_token(self):
-        tokens = self.auth(login_method="token")
-        if tokens:
+        self.tokens = self.auth(login_method="token")
+        if self.tokens:
             self.pipe.set("登陆成功！", "data")
         else:
             self.pipe.set("旧的登陆信息已经失效，请使用账号密码登录", "data")
@@ -48,12 +49,13 @@ class HandShaker:
     def login_with_password(self):
         self.pipe.set("请输入用户名(或邮箱地址)和密码来登录", "data")
         username = self.acquire("get_username")["value"]
+        self.pipe.set(f"Handshaker got username: {username}")
         password = self.acquire("get_password")["value"]
-        self.pipe.set(f"Handshaker got login_info: {login_info}")
-        tokens = self.auth(login_method="password",
-                            login_info=(username, password))
-        if tokens:
-            self.pipe.set("登陆成功！")
+        self.pipe.set(f"Handshaker got password: {password}")
+        self.tokens = self.auth(login_method="password",
+                                login_info=(username, password))
+        if self.tokens:
+            self.pipe.set("登录成功！")
         else:
             self.pipe.set("用户名/密码错误或网络不畅通，尝试重新登录")
             self.login_with_password()
@@ -115,7 +117,7 @@ class TokenHolder:
                 'refresh_token': token_json['response']['refresh_token']}
 
     def exist_token(self):
-        os.path.exists(self.token_file)
+        return os.path.exists(self.token_file)
 
     def remove_token(self):
         if self.exist_token():
@@ -128,10 +130,13 @@ class TokenHolder:
             f.write(encoded_token)
 
     def _load(self):
-        with open(self.token_file, "rb") as f:
-            encoded_token = f.read()
-        token_json = base64.b85decode(encoded_token).decode("utf-8")
-        tokens_dict = json.loads(token_json)
+        if self.exist_token():
+            with open(self.token_file, "rb") as f:
+                encoded_token = f.read()
+            token_json = base64.b85decode(encoded_token).decode("utf-8")
+            tokens_dict = json.loads(token_json)
+        else:
+            tokens_dict = None
         return tokens_dict
 
     tokens = property(_load, _save)

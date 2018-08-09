@@ -14,8 +14,10 @@ class FrontEnd(Process):
         self.lock = t_lock
         self._parent = parent
         # 接收到的后端指令与要做的操作对应表
-        self.mapping = {"get_login_info": self.send_login_info,
-                        "get_working_mode": self.send_working_mode}
+        self.mapping = {"get_working_mode": self.send_working_mode,
+                        "get_username": self.get_username,
+                        "get_password": self.get_password,
+                        "token_strategy": self.get_token_strategy}
 
     def run(self):
         self.lock_print("Frontend.run()")
@@ -29,14 +31,29 @@ class FrontEnd(Process):
             else:
                 self.lock_print(info["value"])
 
-    def send_login_info(self):
-        print('请输入用户名(或邮箱地址)和密码来登录')
-        username = input('请输入用户名(或邮箱地址): ')
-        password = input('请输入密码: ') ######## 为方便测试这里使用的是input！！！！
-                                        ######## 调试完成后务必！！改回getpass.getpass ！！！！
-        login_info = (username, password)
-        self.communicator.set(login_info, "data")
-        self.lock_print("Frontend sent login info")
+    def get_username(self):
+        self.lock_print("请输入用户名(或邮箱地址):")
+        username = input()
+        self.communicator.set(username, "data")
+        self.lock_print("Frontend sent username")
+
+    def get_password(self):
+        self.lock_print("请输入密码:")
+        password = input()  ######## 为方便测试这里使用的是input！！！！
+                            ######## 调试完成后务必！！改回getpass.getpass ！！！！
+        self.communicator.set(password, "data")
+        self.lock_print("Frontend sent password")
+
+    def get_token_strategy(self):
+        self.lock_print("是否保留服务器返回的通行证以便下次登录？")
+        self.lock_print("0: 不保存 1: 保存  （默认保留通行证）")
+        token_strategy = input()
+        if token_strategy == "0":
+            save_token = False
+        else:
+            save_token = True
+        self.communicator.set(save_token, "data")
+        self.lock_print("Frontend sent token_strategy")
 
     def send_working_mode(self):
         command_mapping = {"1": "painter",

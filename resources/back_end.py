@@ -18,13 +18,9 @@ class BackEnd(Process):
 
     def run(self):
         self.lock_print("Backend.run()")
-        self.lock_print("Backend acquire login info")
-        # 向前端要求登录信息. 应增加判断是否存在token 的功能
-
-        self.lock_print(f"Backend got login_info: {login_info}")
-        self.lock_print("Backend login start")
         # login 方法回传登录是否成功
-        login_success = login.start()
+        self.lock_print("Backend login start")
+        login_success = self.login.start()
         self.lock_print(f"Backend login_success: {login_success}")
         while True:
             # 询问前端工作模式并进行下载
