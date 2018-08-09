@@ -1,7 +1,6 @@
 # coding = utf-8
 
 from multiprocessing.dummy import Process
-from .protocol import Pack  # 应在通讯管道优化之后去除加载pack， 直接使用protocol_pipe 通讯
 import getpass
 
 
@@ -21,11 +20,14 @@ class FrontEnd(Process):
     def run(self):
         self.lock_print("Frontend.run()")
         while True:
-            self.lock_print("Frontend waiting command")
+            self.lock_print("Frontend waiting information")
             # 等待后端传来指令
-            command = self.wait_for_command()
-            self.lock_print(f"Frontend got command: {command}")
-            self.mapping[command]()
+            info = self.wait_for_info()
+            self.lock_print(f"Frontend got info: {info}")
+            if info["value_type"] == "command":
+                self.mapping[info["value"]]()
+            else:
+                self.lock_print(info["value"])
 
     def send_login_info(self):
         print('请输入用户名(或邮箱地址)和密码来登录')
@@ -33,7 +35,7 @@ class FrontEnd(Process):
         password = input('请输入密码: ') ######## 为方便测试这里使用的是input！！！！
                                         ######## 调试完成后务必！！改回getpass.getpass ！！！！
         login_info = (username, password)
-        self.communicator.send(Pack(login_info))
+        self.communicator.set(login_info, "data")
         self.lock_print("Frontend sent login info")
 
     def send_working_mode(self):
@@ -47,16 +49,16 @@ class FrontEnd(Process):
             if command in command_mapping:
                 working_mode = command_mapping[command]
                 # 通过pipe 将工作模式告知后端
-                self.communicator.send(Pack(working_mode))
+                self.communicator.set(working_mode, "data")
                 self.lock_print("Frontend sent working mode")
                 break
             else:
                 self.lock_print("不可识别的指令")
 
     # 应增加功能：判断内容类型，分别处理
-    def wait_for_command(self):
-        pack = self.communicator.recv()
-        return pack.info
+    def wait_for_info(self):
+        info = self.communicator.get()
+        return info
 
     def lock_print(self, text):
         self.lock.acquire()
