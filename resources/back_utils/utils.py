@@ -75,8 +75,3 @@ class ProcessAnimationMaker:
         print(self.actions[self.present_action_index], end=print_end)
         sys.stdout.flush()
 
-
-def get_yesterday_date():
-    yesterday = datetime.today() + timedelta(-1)
-    yesterday_date = yesterday.strftime('%Y-%m-%d')
-    return yesterday_date

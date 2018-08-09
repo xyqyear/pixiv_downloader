@@ -4,10 +4,9 @@ import base64
 import json
 import os
 
+
 # 对token 进行增删改查操作
 # 调用应置于handshaker 中
-
-
 class TokenHolder:
 
     def __init__(self):

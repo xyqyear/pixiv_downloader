@@ -1,21 +1,17 @@
 # coding = utf-8
 
-from pixivpy3 import AppPixivAPI
-
 from .managers import TokenHolder
 from .utils import ExceptionHandler
-
-aapi = AppPixivAPI()
 
 
 # 用于登陆账号，与服务器建立连接
 class HandShaker:
 
-    def __init__(self, pipe):
+    def __init__(self, pipe, api):
         self.pipe = pipe
         self.token_holder = TokenHolder()
         self.tokens = None
-        self.api_object = aapi
+        self.api_object = api
 
     def start(self):
         if self.token_holder.exist_token():
@@ -45,9 +41,9 @@ class HandShaker:
 
     def login_with_password(self):
         self.pipe.set("请输入用户名(或邮箱地址)和密码来登录", "data")
-        username = self.require("get_username")["value"]
+        username = self.require("username")["value"]
         self.pipe.set(f"Handshaker got username: {username}")
-        password = self.require("get_password")["value"]
+        password = self.require("password")["value"]
         self.pipe.set(f"Handshaker got password: {password}")
         self.tokens = self.auth(login_method="password",
                                 login_info=(username, password))
@@ -68,7 +64,7 @@ class HandShaker:
 
         elif login_method == "token":
             try:
-                tokens = self.tokens
+                tokens = self.token_holder.tokens
                 self.api_object.set_auth(tokens["access_token"],
                                          tokens["refresh_token"])
                 if 'error' in self.api_object.illust_follow():
@@ -80,7 +76,7 @@ class HandShaker:
 
         elif login_method == "refresh":
             try:
-                refresh_token = self.tokens["refresh_token"]
+                refresh_token = self.token_holder.tokens["refresh_token"]
                 new_tokens = self.api_object.auth(refresh_token=refresh_token)
                 tokens = self.token_holder.parse_token_response(new_tokens)
             except:

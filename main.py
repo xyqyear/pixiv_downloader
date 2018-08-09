@@ -2,7 +2,7 @@
 
 # 从资源文件夹加载前端和后端文件
 from resources import front_end, back_end, protocol
-from multiprocessing.dummy import Pipe, Lock, current_process
+from multiprocessing.dummy import Lock, current_process
 # Pipe 用于前后端之间通讯 以及下载进程通报下载进度
 # Pipe 应当在后续版本进行优化以实现分辨命令类型
 # Lock 用于进程加锁，实际应用主要是实现不被打断地打印调试信息

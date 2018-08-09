@@ -2,6 +2,7 @@
 
 from multiprocessing.dummy import Process
 from .back_utils import handshaker, mode_switch
+from pixivpy3 import AppPixivAPI
 
 
 class BackEnd(Process):
@@ -10,9 +11,10 @@ class BackEnd(Process):
     def __init__(self, communicator, t_lock, parent):
         # 线程初始化
         Process.__init__(self)
-        self.login = handshaker.HandShaker(communicator)
-        self.switch = mode_switch.ModeSwitch(communicator)
+        self.api = AppPixivAPI()
         self.communicator = communicator
+        self.login = handshaker.HandShaker(communicator, self.api)
+        self.switch = mode_switch.ModeSwitch(communicator, self.api)
         self.lock = t_lock
         self._parent = parent
 
@@ -24,8 +26,8 @@ class BackEnd(Process):
         self.lock_print(f"Backend login_success: {login_success}")
         while True:
             # 询问前端工作模式并进行下载
-            self.lock_print("Backend acquire working mode")
-            working_mode = self.require("get_working_mode")["value"]
+            self.lock_print("Backend require working mode")
+            working_mode = self.require("working_mode")["value"]
             self.lock_print(f"Backend got working_mode: {working_mode}")
             downloader = self.switch.choose(working_mode)
             downloader()
@@ -40,7 +42,7 @@ class BackEnd(Process):
 
     # 用于测试时的带锁print
     def lock_print(self, text):
-        self.lock.require()
+        self.lock.acquire()
         print(text)
         self.lock.release()
 
