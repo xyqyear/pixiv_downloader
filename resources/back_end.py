@@ -8,45 +8,29 @@ from pixivpy3 import AppPixivAPI
 class BackEnd(Process):
 
     # 从主程序中获取通讯端口，进程锁，以及得知父进程
-    def __init__(self, communicator, t_lock, parent):
+    def __init__(self, pipe, t_lock, parent):
         # 线程初始化
         Process.__init__(self)
+        self.__name__ = "BackEnd"
         self.api = AppPixivAPI()
-        self.communicator = communicator
-        self.login = handshaker.HandShaker(communicator, self.api)
-        self.switch = mode_switch.ModeSwitch(communicator, self.api)
+        self.pipe = pipe
+        self.login = handshaker.HandShaker(pipe, self.api)
+        self.switch = mode_switch.ModeSwitch(pipe, self.api)
         self.lock = t_lock
         self._parent = parent
 
+    # 这里pipe.set 和pipe.report 方法看起来差不多，
+    # pipe.report 是前端必要知道的状态信息
+    # pipe.set 则是让前端显示了临时用于调试的信息
     def run(self):
-        self.lock_print("Backend.run()")
+        self.pipe.debug("BackEnd start", self.__name__)
         # login 方法回传登录是否成功
-        self.lock_print("Backend login start")
-        login_success = self.login.start()
-        self.lock_print(f"Backend login_success: {login_success}")
+        self.login.start()
         while True:
             # 询问前端工作模式并进行下载
-            self.lock_print("Backend require working mode")
-            working_mode = self.require("working_mode")["value"]
-            self.lock_print(f"Backend got working_mode: {working_mode}")
+            working_mode = self.pipe.require("working_mode", sender=self.__name__)["value"]
+            self.pipe.debug(f"Backend got working_mode: {working_mode}", self.__name__)
             downloader = self.switch.choose(working_mode)
             downloader()
-            self.lock_print("---- Backend download finish ----")
+            self.pipe.debug("download finish", self.__name__)
 
-    # 向前端要求数据的方法. 此实现有风险，若前端因某些原因无回传数据会死锁
-    # 后续尝试改进
-    def require(self, command):
-        self.communicator.set(command, "command")
-        info = self.communicator.get()
-        return info
-
-    # 用于测试时的带锁print
-    def lock_print(self, text):
-        self.lock.acquire()
-        print(text)
-        self.lock.release()
-
-
-if __name__ == "__main__":
-    thread1 = BackEnd(None, None)
-    thread1.start()

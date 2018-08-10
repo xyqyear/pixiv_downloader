@@ -12,29 +12,34 @@ class FrontEnd(Process):
     def __init__(self, communicator, t_lock, parent):
         # 线程初始化
         Process.__init__(self)
+        self.__name__ = "FrontEnd"
         self.communicator = communicator
         self.lock = t_lock
         self._parent = parent
         # 接收到的后端指令与要做的操作对应表
-        self.mapping = {"working_mode": self.get_working_mode,
-                        "login_strategy": self.get_login_strategy,
-                        "username": self.get_username,
-                        "password": self.get_password,
-                        "token_strategy": self.get_token_strategy,
-                        "user_uid": self.get_user_uid,
-                        "painter_uid": self.get_painter_uid,
-                        "rank_date": self.get_download_date,
-                        "rank_type": self.get_rank_type}
+        self.map_require = {"working_mode": self.get_working_mode,
+                            "login_strategy": self.get_login_strategy,
+                            "username": self.get_username,
+                            "password": self.get_password,
+                            "token_strategy": self.get_token_strategy,
+                            "user_uid": self.get_user_uid,
+                            "painter_uid": self.get_painter_uid,
+                            "rank_date": self.get_download_date,
+                            "rank_type": self.get_rank_type}
 
     def run(self):
-        self.lock_print("Frontend.run()")
+        self.lock_print("FrontEnd start")
         while True:
-            self.lock_print("Frontend waiting information")
             # 等待后端传来指令
             info = self.wait_for_info()
-            self.lock_print(f"Frontend got info: {info}")
-            if info["value_type"] == "command":
-                self.mapping[info["value"]]()
+            if info["value_type"] == "require":
+                self.lock_print(f"{info['sender']} require {info['value']}")
+                self.map_require[info["value"]]()
+            elif info["value_type"] == "status":
+                status = info["value"]
+                self.lock_print(f"Status: \\\\{status['status_type']}: {status['status']}\\\\ from {info['sender']}")
+            elif info["value_type"] == "debug":
+                self.lock_print(f"Debug: \\*{info['value']}*\\ from {info['sender']}")
             else:
                 self.lock_print(info["value"])
 
@@ -46,7 +51,6 @@ class FrontEnd(Process):
         while True:
             self.lock_print("0: 重新登录 1: 使用保存的通行证登录  （默认使用通行证登录）")
             command = input()
-            self.lock_print(f"command: {command}")
             if command.isspace() or (not command):
                 login_strategy = "token"
                 break
@@ -163,7 +167,6 @@ class FrontEnd(Process):
             command = input()
             if command in command_mapping:
                 working_mode = command_mapping[command]
-                self.lock_print("Frontend sent working mode")
                 break
             else:
                 self.lock_print("不可识别的指令")
@@ -175,9 +178,8 @@ class FrontEnd(Process):
         return info
 
     def lock_print(self, text):
-        self.lock.acquire()
-        print(text)
-        self.lock.release()
+        with self.lock:
+            print(text)
 
 
 def get_yesterday_date():
