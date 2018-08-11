@@ -11,6 +11,7 @@ class BackEnd(Process):
     def __init__(self, pipe, t_lock, parent):
         # 线程初始化
         Process.__init__(self)
+        self.daemon = True
         self.__name__ = "BackEnd"
         self.api = AppPixivAPI()
         self.pipe = pipe

@@ -12,10 +12,13 @@ class FrontEnd(Process):
     def __init__(self, communicator, t_lock, parent):
         # 线程初始化
         Process.__init__(self)
+        self.daemon = True
         self.__name__ = "FrontEnd"
         self.communicator = communicator
         self.lock = t_lock
         self._parent = parent
+        self._input_text = ""
+
         # 接收到的后端指令与要做的操作对应表
         self.map_require = {"working_mode": self.get_working_mode,
                             "login_strategy": self.get_login_strategy,
@@ -26,6 +29,7 @@ class FrontEnd(Process):
                             "painter_uid": self.get_painter_uid,
                             "rank_date": self.get_download_date,
                             "rank_type": self.get_rank_type}
+        self.input_info()
 
     def run(self):
         self.lock_print("FrontEnd start")
@@ -50,7 +54,7 @@ class FrontEnd(Process):
         self.lock_print("（本地仅保存登录token， 您的密码不会被保存）")
         while True:
             self.lock_print("0: 重新登录 1: 使用保存的通行证登录  （默认使用通行证登录）")
-            command = input()
+            command = self.input_info()
             if command.isspace() or (not command):
                 login_strategy = "token"
                 break
@@ -64,13 +68,13 @@ class FrontEnd(Process):
 
     def get_username(self):
         self.lock_print("请输入用户名(或邮箱地址):")
-        username = input()
+        username = self.input_info()
         self.communicator.set(username, "data")
         self.lock_print("Frontend sent username")
 
     def get_password(self):
         self.lock_print("请输入密码:")
-        password = input()  ######## 为方便测试这里使用的是input！！！！
+        password = self.input_info()  ######## 为方便测试这里使用的是input！！！！
                             ######## 调试完成后务必！！改回getpass.getpass ！！！！
         self.communicator.set(password, "data")
         self.lock_print("Frontend sent password")
@@ -78,7 +82,7 @@ class FrontEnd(Process):
     def get_token_strategy(self):
         self.lock_print("是否保留服务器返回的通行证以便下次登录？")
         self.lock_print("0: 不保存 1: 保存  （默认保留通行证）")
-        token_strategy = input()
+        token_strategy = self.input_info()
         if token_strategy == "0":
             save_token = False
         else:
@@ -89,7 +93,7 @@ class FrontEnd(Process):
     def get_user_uid(self):
         while True:
             self.lock_print("请输入用户uid:")
-            user_uid = input()
+            user_uid = self.input_info()
             if user_uid.isdigit():
                 break
             else:
@@ -100,7 +104,7 @@ class FrontEnd(Process):
     def get_painter_uid(self):
         while True:
             self.lock_print("请输入画师uid:")
-            painter_uid = input()
+            painter_uid = self.input_info()
             if painter_uid.isdigit():
                 break
             else:
@@ -113,7 +117,7 @@ class FrontEnd(Process):
             self.lock_print("请输入下载日期，格式为 年-月-日(例: 2018-1-1)")
             self.lock_print(" . / - : | 可作为分隔符")
             self.lock_print("直接回车选择前一天的榜单")
-            raw_date = input()
+            raw_date = self.input_info()
             if raw_date.isspace() or (not raw_date):
                 date = get_yesterday_date()
                 break
@@ -148,7 +152,7 @@ class FrontEnd(Process):
             self.lock_print("\t" + "\n\t".join(
                 ''.join(map(lambda x: x.ljust(15), mapping_list[i:i+n_in_raw]))
                 for i in range(0, len(mapping_list), n_in_raw)))
-            mode_digit = input()
+            mode_digit = self.input_info()
             if mode_digit in modes:
                 mode = modes[mode_digit]
                 break
@@ -164,7 +168,7 @@ class FrontEnd(Process):
         self.lock_print("选择工作模式：")
         while True:
             self.lock_print("1: 下载画师作品  2: 下载收藏夹  3: 下载排行榜")
-            command = input()
+            command = self.input_info()
             if command in command_mapping:
                 working_mode = command_mapping[command]
                 break
@@ -176,6 +180,14 @@ class FrontEnd(Process):
     def wait_for_info(self):
         info = self.communicator.get()
         return info
+
+    def input_info(self):
+        self.lock.acquire()
+        return self._input_text
+
+    def receive_info(self, info):
+        self._input_text = info
+        self.lock.release()
 
     def lock_print(self, text):
         with self.lock:
