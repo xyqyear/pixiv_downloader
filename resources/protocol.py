@@ -52,7 +52,7 @@ class Connection:
     # 传送调试信息
     # 便于方便地去除调试信息
     def debug(self, value, sender, value_type="debug"):
-        self.set(value, sender, value_type)
+        # self.set(value, sender, value_type)
         pass
 
 

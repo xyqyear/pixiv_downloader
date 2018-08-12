@@ -32,18 +32,20 @@ class FrontEnd(Process):
         self.input_info()
 
     def run(self):
-        self.lock_print("FrontEnd start")
+        # self.lock_print("FrontEnd start")
         while True:
             # 等待后端传来指令
             info = self.wait_for_info()
             if info["value_type"] == "require":
-                self.lock_print(f"{info['sender']} require {info['value']}")
+                # self.lock_print(f"{info['sender']} require {info['value']}")
                 self.map_require[info["value"]]()
             elif info["value_type"] == "status":
                 status = info["value"]
-                self.lock_print(f"Status: \\\\{status['status_type']}: {status['status']}\\\\ from {info['sender']}")
+                self.lock_print(f"Status: {status['status_type']}: {status['status']} from {info['sender']}")
+                pass
             elif info["value_type"] == "debug":
-                self.lock_print(f"Debug: \\*{info['value']}*\\ from {info['sender']}")
+                # self.lock_print(f"Debug: \\*{info['value']}*\\ from {info['sender']}")
+                pass
             else:
                 self.lock_print(info["value"])
 
@@ -64,20 +66,20 @@ class FrontEnd(Process):
             else:
                 self.lock_print("请输入正确的指令")
         self.communicator.set(login_strategy)
-        self.lock_print("Frontend sent login_strategy")
+        # self.lock_print("Frontend sent login_strategy")
 
     def get_username(self):
         self.lock_print("请输入用户名(或邮箱地址):")
         username = self.input_info()
         self.communicator.set(username, "data")
-        self.lock_print("Frontend sent username")
+        # self.lock_print("Frontend sent username")
 
     def get_password(self):
         self.lock_print("请输入密码:")
         password = self.input_info()  ######## 为方便测试这里使用的是input！！！！
                             ######## 调试完成后务必！！改回getpass.getpass ！！！！
         self.communicator.set(password, "data")
-        self.lock_print("Frontend sent password")
+        # self.lock_print("Frontend sent password")
 
     def get_token_strategy(self):
         self.lock_print("是否保留服务器返回的通行证以便下次登录？")
@@ -88,7 +90,7 @@ class FrontEnd(Process):
         else:
             save_token = True
         self.communicator.set(save_token, "data")
-        self.lock_print("Frontend sent token_strategy")
+        # self.lock_print("Frontend sent token_strategy")
 
     def get_user_uid(self):
         while True:
@@ -99,7 +101,7 @@ class FrontEnd(Process):
             else:
                 self.lock_print("请输入正确的用户uid ！")
         self.communicator.set(user_uid)
-        self.lock_print("Frontend sent user_uid")
+        # self.lock_print("Frontend sent user_uid")
 
     def get_painter_uid(self):
         while True:
@@ -110,7 +112,7 @@ class FrontEnd(Process):
             else:
                 self.lock_print("请输入正确的画师uid ！")
         self.communicator.set(painter_uid)
-        self.lock_print("Frontend sent painter_uid")
+        # self.lock_print("Frontend sent painter_uid")
 
     def get_download_date(self):
         while True:
@@ -130,7 +132,7 @@ class FrontEnd(Process):
                 break
             self.lock_print("请输入正确的日期格式")
         self.communicator.set(date)
-        self.lock_print(f"Frontend sent date: {date}")
+        # self.lock_print(f"Frontend sent date: {date}")
 
     def get_rank_type(self):
         modes = {'0': 'day', '3': 'week', '6': 'month',
@@ -159,7 +161,7 @@ class FrontEnd(Process):
             else:
                 self.lock_print("请输入正确的模式")
         self.communicator.set(mode)
-        self.lock_print("Frontend sent rank_type")
+        # self.lock_print("Frontend sent rank_type")
 
     def get_working_mode(self):
         command_mapping = {"1": "painter",
@@ -175,7 +177,7 @@ class FrontEnd(Process):
             else:
                 self.lock_print("不可识别的指令")
         self.communicator.set(working_mode)
-        self.lock_print("Frontend sent working_mode")
+        # self.lock_print("Frontend sent working_mode")
 
     def wait_for_info(self):
         info = self.communicator.get()
