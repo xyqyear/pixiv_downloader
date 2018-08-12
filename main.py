@@ -23,12 +23,12 @@ class AppWindow(QWidget):
     def __init__(self, title, size=None):
         super().__init__()
         self.style = """ 
-                QPushButton{background:transparent;color:white;}
+                QPushButton{ background:#222222;color:white;border-radius:0px; }
                 QLabel{ color:#00ccff; }
-                #window{ background:black;border-radius:4px }
+                #window{ background:black;border-radius:4; }
                 #close{ background-color:#660000;color:white; }
                 #text{ background-color:black;color:#44ff00; }
-                #editor{ background-color:#222222;color:#ff8800;border-width:0;border-style:outset; }
+                #editor{ background-color:#222222;color:#ff8800;border-radius:3; }
             """
         self.QPushButton = QPushButton
         self.title = title
@@ -57,18 +57,15 @@ class AppWindow(QWidget):
         label1 = QLabel()
         label1.setFixedHeight(20)
 
-        label1.setText("Pixiv Downloader")
+        label1.setText(self.title)
         label1.setAlignment(Qt.AlignLeft)
 
         btn1 = QPushButton("-", self)
         btn1.setFixedSize(*button_size)
         btn1.clicked.connect(self.showMinimized)
-        self.full_button = QPushButton("□", self)
-        self.full_button.setFixedSize(*button_size)
-        self.full_button.clicked.connect(self._showMaximized)
-        self.normal_button = QPushButton("■", self)
-        self.normal_button.setFixedSize(*button_size)
-        self.normal_button.clicked.connect(self._showNormal)
+        self.window_button = QPushButton("□", self)
+        self.window_button.setFixedSize(*button_size)
+        self.window_button.clicked.connect(self._showMaximized)
         btn3 = QPushButton("×", self)
         btn3.setFixedSize(*button_size)
         btn3.setObjectName("close")
@@ -90,14 +87,17 @@ class AppWindow(QWidget):
         self.Editor.returnPressed.connect(self.send_text)
 
         hbox1 = QHBoxLayout()  # 水平布局
+        hbox1.setSpacing(0)
         hbox1.addWidget(label1)
         hbox1.addStretch(1)
         hbox1.addWidget(self.slider)
+        hbox1.addSpacing(10)
         hbox1.addWidget(btn1)
-        hbox1.addWidget(self.normal_button)
-        hbox1.addWidget(self.full_button)
+        hbox1.addWidget(self.window_button)
         hbox1.addWidget(btn3)
+
         vbox = QVBoxLayout()  # 垂直布局
+        vbox.setSpacing(0)
         vbox.addLayout(hbox1)
         vbox.addWidget(self.Text)
         vbox.addWidget(self.Editor)
@@ -115,11 +115,15 @@ class AppWindow(QWidget):
 
     def _showMaximized(self):
         self.showMaximized()
-        self.window_button = self.normal_button
+        self.window_button.clicked.disconnect()
+        self.window_button.clicked.connect(self._showNormal)
+        self.window_button.setText("■")
 
     def _showNormal(self):
         self.showNormal()
-        self.window_button = self.full_button
+        self.window_button.clicked.disconnect()
+        self.window_button.clicked.connect(self._showMaximized)
+        self.window_button.setText("□")
 
     def change_transparent(self, slide_value):
         trans = slide_value*0.008 + 0.2
@@ -145,7 +149,7 @@ class AppWindow(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = AppWindow("test")
+    window = AppWindow("Pixiv Downloader")
     window.show()
     sys.exit(app.exec_())
 
