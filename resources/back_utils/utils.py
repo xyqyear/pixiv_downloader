@@ -1,5 +1,5 @@
-# -*- coding:utf-8 -*-
-from datetime import timedelta, datetime
+# -*- encoding:utf-8 -*-
+
 import sys
 import os
 
@@ -49,7 +49,7 @@ class ExceptionHandler:
     def raise_exception():
         """
         打印错误
-        :return: 
+        :return:
         """
         f_code_object = sys._getframe(1).f_code
         exception_file_name = os.path.split(f_code_object.co_filename)[1]
@@ -74,9 +74,3 @@ class ProcessAnimationMaker:
             self.present_action_index += 1
         print(self.actions[self.present_action_index], end=print_end)
         sys.stdout.flush()
-
-
-def get_yesterday_date():
-    yesterday = datetime.today() + timedelta(-1)
-    yesterday_date = yesterday.strftime('%Y-%m-%d')
-    return yesterday_date

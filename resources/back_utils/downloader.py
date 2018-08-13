@@ -1,76 +1,67 @@
-# -*- coding:utf-8 -*-
+# -*- encoding:utf-8 -*-
+
 import requests
 import time
 import sys
 import re
 import os
 
-from .utils import ExceptionHandler, FileHandler, ProcessAnimationMaker, print_end
+from .utils import ExceptionHandler, FileHandler, ProcessAnimationMaker
 from .managers import UrlManager
 
 
-class Download:
+class Downloader:
 
-    def bookmarks(self, api_object, user_uid):
-        """
-        下载收藏夹
-        :param api_object: api对象
-        :param user_uid: 用户id
-        :return:
-        """
+    def __init__(self, api):
+        self.__name__ = "Download"
+        self.api = api
+        self.stop = False
+
+    def bookmarks(self, user_uid):
         while True:
             try:
-                user_info = api_object.user_detail(user_uid)
+                user_info = self.api.user_detail(user_uid)
             except:
-                ExceptionHandler.raise_exception()
+                # ExceptionHandler.raise_exception()
                 continue
             break
 
         # 如果api返回没有profile就说明此用户不存在
         if 'profile' not in user_info:
-            print('此用户不存在!')
-            return
+            raise UserNotExist
         user_total_bookmarks = user_info['profile']['total_illust_bookmarks_public']
         user_name = user_info['user']['name']
         # 创建的文件夹名
         prefix = '_'.join([FileHandler.handle_filename(user_name), '收藏夹', user_uid])
         self.check_prefix(prefix)
-        print('正在拉取收藏夹列表...')
+        self.pipe.report("bookmark_list", "pulling", self.__name__)
         max_bookmark_id = str()
         image_urls = list()
 
         while True:
             try:
-                response = api_object.user_bookmarks_illust(user_uid, max_bookmark_id=max_bookmark_id)
+                response = self.api.user_bookmarks_illust(user_uid, max_bookmark_id=max_bookmark_id)
             except:
                 ExceptionHandler.raise_exception()
-                print('此页网络错误，正在重试')
                 continue
             image_urls += UrlManager.parse_image_urls(response)
             # 如果还有下一页
             if response['next_url']:
-                max_bookmark_id = api_object.parse_qs(response['next_url'])['max_bookmark_id']
+                max_bookmark_id = self.api.parse_qs(response['next_url'])['max_bookmark_id']
                 percentage = int((len(image_urls)/user_total_bookmarks)*100)
-                print(f'{percentage}% ', end=print_end)
+                self.pipe.report("pulling_percentage", percentage, self.__name__)
                 sys.stdout.flush()
-
             else:
                 urls = self.check_images(image_urls, prefix)
-                print(f'拉取完成')
+                self.pipe.report("pulling_finish", True, self.__name__)
                 break
 
         self.download_images(urls, prefix)
 
-    def works(self, api_object, user_uid):
-        """
-        下载画师作品
-        :param api_object: api对象
-        :param user_uid: 画师id
-        :return:
-        """
+    def painter(self, painter_uid):
         while True:
             try:
-                user_info = api_object.user_detail(user_uid)
+                user_info = self.api.user_detail(painter_uid)
             except:
                 ExceptionHandler.raise_exception()
                 continue
@@ -78,87 +69,70 @@ class Download:
 
         # 如果api返回没有profile就说明此画师不存在
         if 'profile' not in user_info:
-            print('此画师不存在!')
+            self.pipe.report("painter_exist", False, self.__name__)
             return
         user_total_illusts = user_info['profile']['total_illusts']
         user_name = user_info['user']['name']
         # 创建的文件夹名
-        prefix = '_'.join([FileHandler.handle_filename(user_name), '作品', user_uid])
+        prefix = '_'.join([FileHandler.handle_filename(user_name), '作品', painter_uid])
         self.check_prefix(prefix)
-        print('正在拉取画师作品列表...')
+        self.pipe.report("painter_list", "pulling", self.__name__)
         offset = 0
         image_urls = list()
         while True:
             try:
-                response = api_object.user_illusts(user_uid, offset=offset)
+                response = self.api.user_illusts(painter_uid, offset=offset)
             except:
-                print('此页网络错误，正在重试')
+                ExceptionHandler.raise_exception()
                 continue
             image_urls += UrlManager.parse_image_urls(response)
             # 如果还有下一页
             if response['next_url']:
-                offset = api_object.parse_qs(response['next_url'])['offset']
+                offset = self.api.parse_qs(response['next_url'])['offset']
                 percentage = int((len(image_urls)/user_total_illusts)*100)
-                print(f'{percentage}% ', end=print_end)
+                self.pipe.report("pulling_percentage", percentage, self.__name__)
                 sys.stdout.flush()
-
             else:
                 urls = self.check_images(image_urls, prefix)
-                print('拉取完成.')
+                self.pipe.report("pulling_finish", True, self.__name__)
                 break
 
         self.download_images(urls, prefix)
 
-    def ranking(self, api_object, date, mode):
-        """
-        下载排行榜
-        :param api_object:
-        :param mode:
-        :param date:
-        :return:
-        """
+    def ranking(self, date, mode):
         # 创建的文件夹名
         prefix = '_'.join([date, mode])
-        print('正在拉取排行榜...')
+        self.pipe.report("ranking", "pulling", self.__name__)
         offset = 0
         image_urls = list()
         animation_maker = ProcessAnimationMaker()
 
         while True:
             try:
-                response = api_object.illust_ranking(date=date, mode=mode, offset=offset)
+                response = self.api.illust_ranking(date=date, mode=mode, offset=offset)
             except:
                 ExceptionHandler.raise_exception()
-                print('此页网络错误，正在重试')
                 continue
             image_urls += UrlManager.parse_image_urls(response)
             # 如果还有下一页
             if response['next_url']:
-                offset = api_object.parse_qs(response['next_url'])['offset']
+                offset = self.api.parse_qs(response['next_url'])['offset']
                 animation_maker.next_action()
-
             else:
                 urls = self.check_images(image_urls, prefix)
-                print(f'拉取完成')
+                self.pipe.report("pulling_finish", True, self.__name__)
                 break
 
         self.download_images(urls, prefix)
 
     # 以下几个函数是相关联的，就不放在不同的模块里面了
     def download_images(self, urls_list, prefix):
-        """
-        下载图片列表
-        还得检测画师名是不是变了，变了就要改文件夹名字
-        :param urls_list: 图片列表，元素都是url组成的list
-        :param prefix: 下载的文件夹名
-        :return:
-        """
         # 如果不存在这个文件夹就创建
         if not os.path.exists(prefix):
             os.makedirs(prefix)
 
         image_num = sum(len(i) for i in urls_list)
-        print(f'即将下载{image_num}张图片')
+        self.pipe.report("download_quantity", image_num, self.__name__)
         download_count = 0
 
         for bag in urls_list:
@@ -174,6 +148,9 @@ class Download:
                     os.makedirs(path_prefix)
 
             for url in bag:
+                if self.stop:
+                    self.pipe.report("download_stop", True, self.__name__)
+                    return
                 image_file_name = os.path.basename(url)
                 image_full_path = os.path.join(path_prefix, image_file_name)
 
@@ -181,14 +158,14 @@ class Download:
                 display_name = os.path.splitext(image_file_name)[0]
                 percentage = 100 * download_count/image_num
 
-                print(f'第{download_count}张图片{display_name}正在下载(总{percentage:.1f}%)', end=print_end)
-                sys.stdout.flush()
+                # 此处修改后将下载百分比移交前端计算
+                self.pipe.report(f"downloading new image", {"name":display_name, "count":download_count}, self.__name__)
                 if self.real_download(url, image_full_path):
-                    print(f'第{download_count}张图片{display_name}下载完成(总{percentage:.1f}%)')
+                    self.pipe.report(f"downloading success", True, self.__name__)
                 else:
-                    print(f'第{download_count}张图片{display_name}下载失败多次，已跳过下载(总{percentage:.1f}%)')
+                    self.pipe.report(f"downloading success", False, self.__name__)
 
-        print('所有图片下载完成')
+        self.pipe.debug("所有图片下载完成", self.__name__)
 
     @staticmethod
     def check_prefix(prefix):
@@ -247,6 +224,10 @@ class Download:
                     f.write(response.content)
                 return True
             except:
-                time.sleep(1)
+                time.sleep(0.5)
 
         return False
+
+
+class UserNotExist(Exception):
+    pass
