@@ -34,10 +34,10 @@ class Downloader:
         # 创建的文件夹名
         prefix = '_'.join([FileHandler.handle_filename(user_name), '收藏夹', user_uid])
         self.check_prefix(prefix)
-        self.pipe.report("bookmark_list", "pulling", self.__name__)
         max_bookmark_id = str()
         image_urls = list()
 
+        yield ("pulling bookmark_list")
         while True:
             try:
                 response = self.api.user_bookmarks_illust(user_uid, max_bookmark_id=max_bookmark_id)
@@ -49,14 +49,15 @@ class Downloader:
             if response['next_url']:
                 max_bookmark_id = self.api.parse_qs(response['next_url'])['max_bookmark_id']
                 percentage = int((len(image_urls)/user_total_bookmarks)*100)
-                self.pipe.report("pulling_percentage", percentage, self.__name__)
-                sys.stdout.flush()
+                yield(f"pulling_percentage: {percentage}")
             else:
                 urls = self.check_images(image_urls, prefix)
-                self.pipe.report("pulling_finish", True, self.__name__)
+                yield("pulling_finish")
                 break
 
-        self.download_images(urls, prefix)
+        for info in self.download_images(urls, prefix):
+            yield info
+        return
 
     def painter(self, painter_uid):
         while True:
@@ -69,16 +70,16 @@ class Downloader:
 
         # 如果api返回没有profile就说明此画师不存在
         if 'profile' not in user_info:
-            self.pipe.report("painter_exist", False, self.__name__)
-            return
+            raise UserNotExist
         user_total_illusts = user_info['profile']['total_illusts']
         user_name = user_info['user']['name']
         # 创建的文件夹名
         prefix = '_'.join([FileHandler.handle_filename(user_name), '作品', painter_uid])
         self.check_prefix(prefix)
-        self.pipe.report("painter_list", "pulling", self.__name__)
         offset = 0
         image_urls = list()
+
+        yield("pulling painter_list")
         while True:
             try:
                 response = self.api.user_illusts(painter_uid, offset=offset)
@@ -90,23 +91,25 @@ class Downloader:
             if response['next_url']:
                 offset = self.api.parse_qs(response['next_url'])['offset']
                 percentage = int((len(image_urls)/user_total_illusts)*100)
-                self.pipe.report("pulling_percentage", percentage, self.__name__)
+                yield (f"pulling_percentage: {percentage}")
                 sys.stdout.flush()
             else:
                 urls = self.check_images(image_urls, prefix)
-                self.pipe.report("pulling_finish", True, self.__name__)
+                yield("pulling_finish")
                 break
 
-        self.download_images(urls, prefix)
+        for info in self.download_images(urls, prefix):
+            yield info
+        return
 
     def ranking(self, date, mode):
         # 创建的文件夹名
         prefix = '_'.join([date, mode])
-        self.pipe.report("ranking", "pulling", self.__name__)
         offset = 0
         image_urls = list()
         animation_maker = ProcessAnimationMaker()
 
+        yield("pulling ranking")
         while True:
             try:
                 response = self.api.illust_ranking(date=date, mode=mode, offset=offset)
@@ -117,13 +120,15 @@ class Downloader:
             # 如果还有下一页
             if response['next_url']:
                 offset = self.api.parse_qs(response['next_url'])['offset']
-                animation_maker.next_action()
+                yield(animation_maker.next_action())
             else:
                 urls = self.check_images(image_urls, prefix)
-                self.pipe.report("pulling_finish", True, self.__name__)
+                yield("pulling_finish")
                 break
 
-        self.download_images(urls, prefix)
+        for info in self.download_images(urls, prefix):
+            yield info
+        return
 
     # 以下几个函数是相关联的，就不放在不同的模块里面了
     def download_images(self, urls_list, prefix):
@@ -132,7 +137,7 @@ class Downloader:
             os.makedirs(prefix)
 
         image_num = sum(len(i) for i in urls_list)
-        self.pipe.report("download_quantity", image_num, self.__name__)
+        yield(f"download_quantity: {image_num}")
         download_count = 0
 
         for bag in urls_list:
@@ -149,7 +154,7 @@ class Downloader:
 
             for url in bag:
                 if self.stop:
-                    self.pipe.report("download_stop", True, self.__name__)
+                    yield("download_stop")
                     return
                 image_file_name = os.path.basename(url)
                 image_full_path = os.path.join(path_prefix, image_file_name)
@@ -158,14 +163,14 @@ class Downloader:
                 display_name = os.path.splitext(image_file_name)[0]
                 percentage = 100 * download_count/image_num
 
-                # 此处修改后将下载百分比移交前端计算
-                self.pipe.report(f"downloading new image", {"name":display_name, "count":download_count}, self.__name__)
+                yield(f"downloading new image", {"name": display_name, "count": download_count, "percentage": percentage})
                 if self.real_download(url, image_full_path):
-                    self.pipe.report(f"downloading success", True, self.__name__)
+                    yield(f"downloading success", True, self.__name__)
                 else:
-                    self.pipe.report(f"downloading success", False, self.__name__)
+                    yield(f"downloading success", False, self.__name__)
 
-        self.pipe.debug("所有图片下载完成", self.__name__)
+        yield("所有图片下载完成", self.__name__)
+        return
 
     @staticmethod
     def check_prefix(prefix):

@@ -22,7 +22,7 @@ class TokenHolder:
                 'refresh_token': token_json['response']['refresh_token']}
 
     def exist_token(self):
-        return os.path.exists(self.token_file)
+        return self.tokens
 
     def remove_token(self):
         if self.exist_token():
@@ -35,7 +35,7 @@ class TokenHolder:
             f.write(encoded_token)
 
     def _load(self):
-        if self.exist_token():
+        if os.path.exists(self.token_file):
             with open(self.token_file, "rb") as f:
                 encoded_token = f.read()
             token_json = base64.b85decode(encoded_token).decode("utf-8")

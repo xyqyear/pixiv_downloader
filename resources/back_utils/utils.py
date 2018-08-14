@@ -72,5 +72,4 @@ class ProcessAnimationMaker:
             self.present_action_index = 0
         else:
             self.present_action_index += 1
-        print(self.actions[self.present_action_index], end=print_end)
-        sys.stdout.flush()
+        return self.actions[self.present_action_index]

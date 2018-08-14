@@ -32,6 +32,12 @@ class Handshaker:
         else:
             return False
 
+    def save_token(self, token_strategy):
+        if token_strategy:
+            self.token_holder.tokens = self.tokens
+        else:
+            self.token_holder.remove_token()
+
     # 登录并返回token
     def auth(self, login_method=None, login_info=None):
         if login_method == "password":

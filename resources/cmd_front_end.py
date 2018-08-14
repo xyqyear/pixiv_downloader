@@ -1,8 +1,6 @@
 # -*- encoding:utf-8 -*-
 
-from multiprocessing import Process, Lock
-import sys
-import os
+from multiprocessing.dummy import Process
 import re
 
 
@@ -13,7 +11,6 @@ class FrontEnd(Process):
         self.daemon = True
         self.pipe = pipe
         self._parent = parent
-        self.lock = Lock()
 
         self.tokens = None
 
@@ -29,19 +26,21 @@ class FrontEnd(Process):
         self.data_mapping = {"tokens": self.tokens}
 
     def run(self):
-        sys.stdin = os.fdopen(0)
         while True:
             pack = self.pipe.recv()
             if pack.info_type == "require":
                 self.do_require(pack.info)
             elif pack.info_type == "data":
                 self.set_data(pack.info)
+            elif pack.info_type == "state":
+                print(pack.info)
 
     def do_require(self, info):
         self.require_mapping[info]()
 
     def set_data(self, info):
         self.data_mapping[info[0]] = info[1]
+        print(f"Front set {info[0]} to {info[1]}")
 
     def get_working_mode(self):
         command_mapping = {"1": "painter",
@@ -169,8 +168,7 @@ class FrontEnd(Process):
         return info
 
     def lock_print(self, *text):
-        with self.lock:
-            print(*text)
+        print(*text)
 
 
 def get_yesterday_date():

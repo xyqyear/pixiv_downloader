@@ -1,7 +1,7 @@
 # -*- encoding:utf-8 -*-
 
 from resources import back_end, protocol
-from multiprocessing import current_process
+from multiprocessing.dummy import current_process
 
 import sys
 if sys.argv[1:]:
@@ -16,12 +16,13 @@ else:
 
 if __name__ == "__main__":
     (front_pipe, back_pipe) = protocol.ProtocolPipe()()
-    process = current_process
+    process = current_process()
     Front = front_end.FrontEnd(front_pipe, process)
     Back = back_end.BackEnd(back_pipe, process)
+
     thread_list = [Front, Back]
     for t in thread_list:
         t.start()
-        print(t)
-    for t in thread_list:
-        t.join()
+
+    # 只等待前端关闭就行了
+    Front.join()

@@ -1,6 +1,6 @@
 # -*- encoding:utf-8 -*-
 
-from multiprocessing import Pipe
+from multiprocessing.dummy import Pipe
 import sys
 
 
