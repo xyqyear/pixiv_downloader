@@ -2,6 +2,7 @@
 
 from resources import back_end, protocol
 from multiprocessing.dummy import current_process
+from PyQt5.QtWidgets import QApplication
 
 import sys
 if sys.argv[1:]:
@@ -11,12 +12,15 @@ if sys.argv[1:]:
     elif cmd == "gui":
         from resources import gui_front_end as front_end
 else:
-    from resources import cmd_front_end as front_end
+    from resources import gui_front_end as front_end
 
 
 if __name__ == "__main__":
     (front_pipe, back_pipe) = protocol.ProtocolPipe()()
     process = current_process()
+
+    app = QApplication(sys.argv[2:])
+
     Front = front_end.FrontEnd(front_pipe, process)
     Back = back_end.BackEnd(back_pipe, process)
 
@@ -24,5 +28,6 @@ if __name__ == "__main__":
     for t in thread_list:
         t.start()
 
+    sys.exit(app.exec_())
     # 只等待前端关闭就行了
-    Front.join()
+

@@ -40,7 +40,6 @@ class FrontEnd(Process):
 
     def set_data(self, info):
         self.data_mapping[info[0]] = info[1]
-        print(f"Front set {info[0]} to {info[1]}")
 
     def get_working_mode(self):
         command_mapping = {"1": "painter",
