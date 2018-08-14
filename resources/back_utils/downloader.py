@@ -13,7 +13,6 @@ from .managers import UrlManager
 class Downloader:
 
     def __init__(self, api):
-        self.__name__ = "Download"
         self.api = api
         self.stop = False
 

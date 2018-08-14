@@ -36,10 +36,8 @@ class BackEnd(Process):
             else:
                 self.pipe.send("username", "require")
                 username = self.pipe.recv().info
-                print(f"Back get username {username}")
                 self.pipe.send("password", "require")
                 password = self.pipe.recv().info
-                print(f"Back get password {password}")
                 login_success = self.login.login_with_password(username, password)
         self.pipe.send("token_strategy", "require")
         token_strategy = self.pipe.recv().info

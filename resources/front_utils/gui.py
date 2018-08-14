@@ -19,7 +19,7 @@ from math import exp
 # 真是奇怪的特性
 
 
-class AppWindow(QWidget, QProcess):
+class AppWindow(QWidget):
 
     signal_input = pyqtSignal(str)
 

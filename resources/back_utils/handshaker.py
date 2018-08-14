@@ -7,7 +7,6 @@ from .utils import ExceptionHandler
 class Handshaker:
 
     def __init__(self, api):
-        self.__name__ = "Handshaker"
         self.token_holder = TokenHolder()
         self.tokens = None
         self.api_object = api
