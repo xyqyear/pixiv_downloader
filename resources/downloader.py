@@ -5,7 +5,7 @@ import sys
 import re
 import os
 
-from .utils import ExceptionHandler, FileHandler, ProcessAnimationMaker, print_end
+from .utils import ExceptionHandler, FileHandler, ProcessAnimationMaker, print_end, TIMEOUT
 from .managers import UrlManager
 
 
@@ -242,7 +242,7 @@ class Download:
         """
         for i in range(retry_count):
             try:
-                response = requests.get(url, headers={'Referer': 'https://app-api.pixiv.net/'})
+                response = requests.get(url, headers={'Referer': 'https://app-api.pixiv.net/'}, timeout=TIMEOUT)
                 with open(path, 'wb') as f:
                     f.write(response.content)
                 return True

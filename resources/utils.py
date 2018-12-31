@@ -5,6 +5,7 @@ import os
 
 # 某些print的时候用到的end
 print_end = '\r'
+TIMEOUT = 8000
 
 
 class FileHandler:
