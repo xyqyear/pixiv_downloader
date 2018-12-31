@@ -1,4 +1,10 @@
 # pixiv_downloader
+    
+requirement:
+
+    python3.6+ (because of f-string)
+    pip install pixivpy
+
 从P站下载图片的小程序
 
 并不需要什么文档,打开就会用了
