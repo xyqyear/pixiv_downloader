@@ -10,6 +10,17 @@ from .utils import ExceptionHandler
 token_file = "token.tkn"
 
 
+class ProxyManager:
+    def __init__(self):
+        is_need_proxy = input('是否需要代理?需要请按1,不需要请输0: ')
+        if is_need_proxy:
+            address = input('请输入代理地址(e.g. http://127.0.0.1:1080 或 socks5://localhost:10800): ')
+            if address.startswith('http'):
+                self.proxies = {'https': address}
+            if address.startswith('socks5'):
+                self.proxies = {'https': address}
+
+
 class UserManager:
 
     def __init__(self, api_object):

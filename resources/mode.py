@@ -7,13 +7,13 @@ from .utils import get_yesterday_date
 
 class ModeSwitcher:
 
-    def __init__(self, api_object):
+    def __init__(self, api_object, proxies):
         self.modes = {"1": self.mode1,
                       "2": self.mode2,
                       "3": self.mode3,
                       "4": self.mode4}
         self.api_object = api_object
-        self.download = Download()
+        self.download = Download(proxies)
 
     def start(self):
         """

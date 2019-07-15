@@ -10,6 +10,8 @@ from .managers import UrlManager
 
 
 class Download:
+    def __init__(self, proxies):
+        self.proxies = proxies
 
     def bookmarks(self, api_object, user_uid):
         """
@@ -231,8 +233,7 @@ class Download:
             urls_list.remove(image)
         return urls_list
 
-    @staticmethod
-    def real_download(url, path, retry_count=4):
+    def real_download(self, url, path, retry_count=4):
         """
         下载图片
         :param url:
@@ -242,7 +243,10 @@ class Download:
         """
         for i in range(retry_count):
             try:
-                response = requests.get(url, headers={'Referer': 'https://app-api.pixiv.net/'}, timeout=TIMEOUT)
+                response = requests.get(url,
+                                        headers={'Referer': 'https://app-api.pixiv.net/'},
+                                        timeout=TIMEOUT,
+                                        proxies=self.proxies)
                 with open(path, 'wb') as f:
                     f.write(response.content)
                 return True

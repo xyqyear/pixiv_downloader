@@ -2,6 +2,7 @@
 from datetime import timedelta, datetime
 import sys
 import os
+import re
 
 # 某些print的时候用到的end
 print_end = '\r'
@@ -31,17 +32,13 @@ class FileHandler:
         return allfiles
 
     @staticmethod
-    def handle_filename(string):
+    def handle_filename(_str):
         """
         用于处理windows路径敏感的字符串
-        :param string: 需要处理的字符串
+        :param _str: 需要处理的字符串
         :return:
         """
-        return string\
-            .replace('\\', '_').replace('/', '_') \
-            .replace('"', '_').replace('<', '_') \
-            .replace('>', '_').replace('|', '_') \
-            .replace(':', '_').replace('?', '_').replace('*', '_')
+        return re.sub(r'[\\\/\:\*\?\"\<\>\|]', '_', _str)
 
 
 class ExceptionHandler:
